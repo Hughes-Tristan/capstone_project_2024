@@ -1,27 +1,15 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+// 
+// Code by: Tristan Hughes
+// Date: 10-12-24
 
+/*
+Look into copyright notice ? this comment was included when creating the class: Fill out your copyright
+notice in the Description page of Project Settings.
+*/
 
 #include "DamageInfo.h"
 
-// Sets default values
-ADamageInfo::ADamageInfo()
-{
- 	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
-	PrimaryActorTick.bCanEverTick = true;
-
-}
-
-// Called when the game starts or when spawned
-void ADamageInfo::BeginPlay()
-{
-	Super::BeginPlay();
+UDamageInfo::UDamageInfo()
+	: damageAmount(0.0), isIndestructible(false), damageType(EDamageType::LightAttack), damageResponse(EDamageResponse::Melee) {}
 	
-}
-
-// Called every frame
-void ADamageInfo::Tick(float DeltaTime)
-{
-	Super::Tick(DeltaTime);
-
-}
 
