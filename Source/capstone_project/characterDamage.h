@@ -5,6 +5,9 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
 #include "damageComponent.h"
+
+class AenemyDamage;
+
 #include "characterDamage.generated.h"
 
 UCLASS()
@@ -16,11 +19,11 @@ public:
 	// Sets default values for this character's properties
 	AcharacterDamage();
 
-	UPROPERTY(VisibleAnywhere)
-	float movespeedtesting;
-
 	UFUNCTION(BlueprintCallable, Category = "Damage")
 	void takeDamage(const UDamageInfo* damageInfo);
+
+	UFUNCTION(BlueprintCallable, Category = "Damage")
+	void doDamage(AActor* target);
 
 protected:
 	// Called when the game starts or when spawned

@@ -5,7 +5,9 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include "damageComponent.h"
-#include "characterDamage.h"
+
+class AcharacterDamage;
+
 #include "enemyDamage.generated.h"
 
 UCLASS()
@@ -22,6 +24,7 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Damage")
 	void doDamage(AActor* target);
+
 
 protected:
 	// Called when the game starts or when spawned

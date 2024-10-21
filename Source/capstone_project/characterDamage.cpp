@@ -2,6 +2,7 @@
 
 
 #include "characterDamage.h"
+#include "enemyDamage.h"
 
 // Sets default values
 AcharacterDamage::AcharacterDamage()
@@ -23,6 +24,23 @@ void AcharacterDamage::takeDamage(const UDamageInfo* damageInfo) {
 	if (damageInfo) {
 		if (damageComponent) {
 			damageComponent->applyDamage(damageInfo);
+		}
+	}
+}
+
+void AcharacterDamage::doDamage(AActor* target) {
+	if(target) {
+		UDamageInfo* damageInfo = NewObject<UDamageInfo>();
+
+		damageInfo->damageAmount = 10.0;
+		damageInfo->damageType = EDamageType::LightAttack;
+		damageInfo->damageResponse = EDamageResponse::Melee;
+		damageInfo->isIndestructible = false;
+
+		AenemyDamage* enemyPresent = Cast<AenemyDamage>(target);
+		
+		if(enemyPresent) {
+			enemyPresent->takeDamage(damageInfo);
 		}
 	}
 }

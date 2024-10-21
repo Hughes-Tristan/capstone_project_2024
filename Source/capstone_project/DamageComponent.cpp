@@ -49,24 +49,25 @@ void UdamageComponent::applyDamage(const UDamageInfo* damageInfo) {
 			default:
 				break;
 		}
+
 		health -= damageApplied;
-		switch (damageInfo->damageResponse) {
-			case EDamageResponse::Death:
-				health = 0;
-				
 
-				if (player) {
-					player->GetMesh()->SetSimulatePhysics(true);
-				}
-				break;
-
-			case EDamageResponse::Melee:
-				TEXT("MELEE");
+		if(health <= 0){
+			health = 0;
+			ACharacter* targetCharacter = Cast<ACharacter>(GetOwner());
+			if (targetCharacter) {
+				targetCharacter->GetMesh()->SetSimulatePhysics(true);
+			}
+		} else {
+			switch (damageInfo->damageResponse) {
+				case EDamageResponse::Melee:
+					TEXT("MELEE");
 				break;	
-
 			default:
 				break;
 		}
+		}
+
 	}
 }
 

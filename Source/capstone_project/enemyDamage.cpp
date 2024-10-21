@@ -2,6 +2,7 @@
 
 
 #include "enemyDamage.h"
+#include "characterDamage.h"
 
 // Sets default values
 AenemyDamage::AenemyDamage()

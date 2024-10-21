@@ -15,7 +15,7 @@ notice in the Description page of Project Settings.
 #include "damageComponent.generated.h"
 
 
-UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
+UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class CAPSTONE_PROJECT_API UdamageComponent : public UActorComponent
 {
 	GENERATED_BODY()
