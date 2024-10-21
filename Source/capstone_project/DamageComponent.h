@@ -24,8 +24,11 @@ public:
 	// Sets default values for this component's properties
 	UdamageComponent();
 
+	UFUNCTION(BlueprintCallable, Category = "Damage")
 	void applyHealth(float healthAmount);
-	void applyDamage(const UDamageInfo& damageInfo);
+
+	UFUNCTION(BlueprintCallable, Category = "Damage")
+	void applyDamage(const UDamageInfo* damageInfo);
 
 protected:
 	// Called when the game starts

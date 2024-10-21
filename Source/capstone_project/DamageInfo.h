@@ -40,7 +40,8 @@ class CAPSTONE_PROJECT_API UDamageInfo : public UObject
 
 public:
 
-	UDamageInfo();
+	UDamageInfo()
+		: damageAmount(0.0), isIndestructible(false), damageType(EDamageType::LightAttack), damageResponse(EDamageResponse::Melee) {}
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	float damageAmount;

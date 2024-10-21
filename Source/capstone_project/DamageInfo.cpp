@@ -9,7 +9,5 @@ notice in the Description page of Project Settings.
 
 #include "DamageInfo.h"
 
-UDamageInfo::UDamageInfo()
-	: damageAmount(0.0), isIndestructible(false), damageType(EDamageType::LightAttack), damageResponse(EDamageResponse::Melee) {}
 	
 

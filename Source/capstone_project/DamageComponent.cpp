@@ -28,11 +28,11 @@ void UdamageComponent::applyHealth(float healthAmount) {
 	health += healthAmount;
 }
 
-void UdamageComponent::applyDamage(const UDamageInfo& damageInfo) {
+void UdamageComponent::applyDamage(const UDamageInfo* damageInfo) {
 	ACharacter* player = Cast<ACharacter>(GetOwner());
-	if (!damageInfo.isIndestructible) {
-		float damageApplied = damageInfo.damageAmount;
-		switch (damageInfo.damageType) {
+	if (!damageInfo->isIndestructible) {
+		float damageApplied = damageInfo->damageAmount;
+		switch (damageInfo->damageType) {
 			case EDamageType::None:
 				damageApplied = 0.0;
 				TEXT("No Damage Taken");
@@ -50,7 +50,7 @@ void UdamageComponent::applyDamage(const UDamageInfo& damageInfo) {
 				break;
 		}
 		health -= damageApplied;
-		switch (damageInfo.damageResponse) {
+		switch (damageInfo->damageResponse) {
 			case EDamageResponse::Death:
 				health = 0;
 				

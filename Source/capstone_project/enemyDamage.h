@@ -5,18 +5,22 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include "damageComponent.h"
-#include "mainCharacter.h"
-#include "EnemyClass.generated.h"
+#include "characterDamage.h"
+#include "enemyDamage.generated.h"
 
 UCLASS()
-class CAPSTONE_PROJECT_API AEnemyClass : public AActor
+class CAPSTONE_PROJECT_API AenemyDamage : public AActor
 {
 	GENERATED_BODY()
 	
 public:	
 	// Sets default values for this actor's properties
-	AEnemyClass();
-	void takeDamage(const UDamageInfo& damageInfo);
+	AenemyDamage();
+
+	UFUNCTION(BlueprintCallable, Category = "Damage")
+	void takeDamage(const UDamageInfo* damageInfo);
+
+	UFUNCTION(BlueprintCallable, Category = "Damage")
 	void doDamage(AActor* target);
 
 protected:
@@ -24,6 +28,8 @@ protected:
 	virtual void BeginPlay() override;
 
 private:
+
+	//UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	UdamageComponent* damageComponent;
 
 /*public:

@@ -1,10 +1,10 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "mainCharacter.h"
+#include "characterDamage.h"
 
 // Sets default values
-AmainCharacter::AmainCharacter()
+AcharacterDamage::AcharacterDamage()
 {
  	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	//PrimaryActorTick.bCanEverTick = true;
@@ -13,15 +13,17 @@ AmainCharacter::AmainCharacter()
 }
 
 // Called when the game starts or when spawned
-void AmainCharacter::BeginPlay()
+void AcharacterDamage::BeginPlay()
 {
 	Super::BeginPlay();
 	
 }
 
-void AmainCharacter::takeDamage(const UDamageInfo& damageInfo) {
-	if (damageComponent) {
-		damageComponent->applyDamage(damageInfo);
+void AcharacterDamage::takeDamage(const UDamageInfo* damageInfo) {
+	if (damageInfo) {
+		if (damageComponent) {
+			damageComponent->applyDamage(damageInfo);
+		}
 	}
 }
 
@@ -38,4 +40,3 @@ void AmainCharacter::takeDamage(const UDamageInfo& damageInfo) {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 
 }*/
-

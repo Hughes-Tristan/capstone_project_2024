@@ -5,17 +5,22 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
 #include "damageComponent.h"
-#include "mainCharacter.generated.h"
+#include "characterDamage.generated.h"
 
 UCLASS()
-class CAPSTONE_PROJECT_API AmainCharacter : public ACharacter
+class CAPSTONE_PROJECT_API AcharacterDamage : public ACharacter
 {
 	GENERATED_BODY()
 
 public:
 	// Sets default values for this character's properties
-	AmainCharacter();
-	void takeDamage(const UDamageInfo& damageInfo);
+	AcharacterDamage();
+
+	UPROPERTY(VisibleAnywhere)
+	float movespeedtesting;
+
+	UFUNCTION(BlueprintCallable, Category = "Damage")
+	void takeDamage(const UDamageInfo* damageInfo);
 
 protected:
 	// Called when the game starts or when spawned
