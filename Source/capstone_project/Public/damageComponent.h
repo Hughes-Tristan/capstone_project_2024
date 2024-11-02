@@ -32,6 +32,8 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Damage")
 	float getHealth() const;
+
+	UFUNCTION(BlueprintCallable, Category = "Damage")
 	float getMaxHealth() const;
 
 protected:
