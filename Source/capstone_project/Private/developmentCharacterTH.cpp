@@ -1,7 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
-
 #include "developmentCharacterTH.h"
+
 
 // Template Base Code: Copyright Epic Games, Inc. All Rights Reserved.
 // Template base code used from third person character template used and expanded upon with compliance to Epic Games Unreal Engine EULA
