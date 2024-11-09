@@ -23,6 +23,10 @@ DEFINE_LOG_CATEGORY(LogTemplateDevelopmentCharacter);
 
 AdevelopmentCharacter::AdevelopmentCharacter()
 {
+	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// CODE WITHIN THE BLOCK BELOW IS WRITTEN BY Unreal Engine
+	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// Set size for collision capsule
 	// Set size for collision capsule
 	GetCapsuleComponent()->InitCapsuleSize(42.f, 96.0f);
 
@@ -32,14 +36,14 @@ AdevelopmentCharacter::AdevelopmentCharacter()
 	bUseControllerRotationRoll = false;
 
 	// Configure character movement
-	GetCharacterMovement()->bOrientRotationToMovement = true; // Character moves in the direction of input...	
+	//GetCharacterMovement()->bOrientRotationToMovement = true; // Character moves in the direction of input...	
 	GetCharacterMovement()->RotationRate = FRotator(0.0f, 500.0f, 0.0f); // ...at this rotation rate
 
 	// Note: For faster iteration times these variables, and many more, can be tweaked in the Character Blueprint
 	// instead of recompiling to adjust them
 	GetCharacterMovement()->JumpZVelocity = 700.f;
 	GetCharacterMovement()->AirControl = 0.35f;
-	GetCharacterMovement()->MaxWalkSpeed = 500.f;
+	GetCharacterMovement()->MaxWalkSpeed = 800.f;
 	GetCharacterMovement()->MinAnalogWalkSpeed = 20.f;
 	GetCharacterMovement()->BrakingDecelerationWalking = 2000.f;
 	GetCharacterMovement()->BrakingDecelerationFalling = 1500.0f;
@@ -47,7 +51,7 @@ AdevelopmentCharacter::AdevelopmentCharacter()
 	// Create a camera boom (pulls in towards the player if there is a collision)
 	CameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraBoom"));
 	CameraBoom->SetupAttachment(RootComponent);
-	CameraBoom->TargetArmLength = 400.0f; // The camera follows at this distance behind the character	
+	CameraBoom->TargetArmLength = 175.0f; // The camera follows at this distance behind the character	
 	CameraBoom->bUsePawnControlRotation = true; // Rotate the arm based on the controller
 
 	// Create a follow camera
@@ -57,7 +61,19 @@ AdevelopmentCharacter::AdevelopmentCharacter()
 
 	// Note: The skeletal mesh and anim blueprint references on the Mesh component (inherited from Character) 
 	// are set in the derived blueprint asset named ThirdPersonCharacter (to avoid direct content references in C++)
+	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// CODE WITHIN THE BLOCK ABOVE IS WRITTEN BY Unreal Engine
+	// CODE WITHIN THE BLOCK BELOW IS WRITTEN BY Trisan Hughes
+	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	CameraBoom->SocketOffset = FVector(0.0f,55.0f,70.0f);
+	FRotator cameraRotation(0.0f, -10.0f, 0.0f);
+	//FollowCamera->AddRelativeRotation(cameraRotation);
+	
 }
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// CODE WITHIN THE BLOCK BELOW IS WRITTEN BY Unreal Engine
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 void AdevelopmentCharacter::BeginPlay()
 {
@@ -65,11 +81,45 @@ void AdevelopmentCharacter::BeginPlay()
 	Super::BeginPlay();
 }
 
-//////////////////////////////////////////////////////////////////////////
-// Input
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// CODE WITHIN THE BLOCK ABOVE IS WRITTEN BY Unreal Engine
+// CODE WITHIN THE BLOCK BELOW IS WRITTEN BY Trisan Hughes
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+void AdevelopmentCharacter::Tick(float time) {
+	Super::Tick(time);
+
+	FVector charVelocity = GetCharacterMovement()->Velocity;
+	const float checkLimit = 0.1f;
+	bool movementCheck = false;
+
+	if (charVelocity.SizeSquared() > FMath::Square(checkLimit)) {
+		movementCheck = true;
+	}
+	else {
+		movementCheck = false;
+	}
+
+	FString MovingStr = FString::Printf(TEXT("IsMoving: %s"), movementCheck ? TEXT("True") : TEXT("False"));
+	GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::Green, MovingStr);
+
+	if (movementCheck) {
+		GetCharacterMovement()->bOrientRotationToMovement = false;
+	}
+	else {
+		GetCharacterMovement()->bOrientRotationToMovement = true;
+	}
+
+}
+
+
+
+// Input
 void AdevelopmentCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
+	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// CODE WITHIN THE BLOCK BELOW IS WRITTEN BY Unreal Engine
+	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// Add Input Mapping Context
 	if (APlayerController* PlayerController = Cast<APlayerController>(GetController()))
 	{
@@ -96,10 +146,17 @@ void AdevelopmentCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInp
 	{
 		UE_LOG(LogTemplateDevelopmentCharacter, Error, TEXT("'%s' Failed to find an Enhanced Input component! This template is built to use the Enhanced Input system. If you intend to use the legacy system, then you will need to update this C++ file."), *GetNameSafe(this));
 	}
+	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// CODE WITHIN THE BLOCK ABOVE IS WRITTEN BY Unreal Engine
+	// CODE WITHIN THE BLOCK BELOW IS WRITTEN BY Trisan Hughes
+	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 }
 
 void AdevelopmentCharacter::Move(const FInputActionValue& Value)
 {
+	/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// CODE WITHIN THE BLOCK BELOW IS WRITTEN BY Unreal Engine
+	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// input is a Vector2D
 	FVector2D MovementVector = Value.Get<FVector2D>();
 
@@ -118,11 +175,19 @@ void AdevelopmentCharacter::Move(const FInputActionValue& Value)
 		// add movement 
 		AddMovementInput(ForwardDirection, MovementVector.Y);
 		AddMovementInput(RightDirection, MovementVector.X);
+		////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+		// CODE WITHIN THE BLOCK ABOVE IS WRITTEN BY Unreal Engine
+		// CODE WITHIN THE BLOCK BELOW IS WRITTEN BY Trisan Hughes
+		////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 	}
 }
 
 void AdevelopmentCharacter::Look(const FInputActionValue& Value)
 {
+	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// CODE WITHIN THE BLOCK BELOW IS WRITTEN BY Unreal Engine
+	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// input is a Vector2D
 	FVector2D LookAxisVector = Value.Get<FVector2D>();
 
@@ -132,4 +197,10 @@ void AdevelopmentCharacter::Look(const FInputActionValue& Value)
 		AddControllerYawInput(LookAxisVector.X);
 		AddControllerPitchInput(LookAxisVector.Y);
 	}
+	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// CODE WITHIN THE BLOCK ABOVE IS WRITTEN BY Unreal Engine
+	// CODE WITHIN THE BLOCK BELOW IS WRITTEN BY Trisan Hughes
+	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
 }

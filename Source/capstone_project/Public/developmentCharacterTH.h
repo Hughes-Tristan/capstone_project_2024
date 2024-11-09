@@ -18,6 +18,9 @@ DECLARE_LOG_CATEGORY_EXTERN(LogTemplateDevelopmentCharacter, Log, All);
 UCLASS()
 class AdevelopmentCharacter : public ACharacter
 {
+	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// CODE WITHIN THE BLOCK BELOW IS WRITTEN BY Unreal Engine
+	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	GENERATED_BODY()
 
 	/** Camera boom positioning the camera behind the character */
@@ -71,5 +74,12 @@ public:
 	FORCEINLINE class USpringArmComponent* GetCameraBoom() const { return CameraBoom; }
 	/** Returns FollowCamera subobject **/
 	FORCEINLINE class UCameraComponent* GetFollowCamera() const { return FollowCamera; }
+
+	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// CODE WITHIN THE BLOCK ABOVE IS WRITTEN BY Unreal Engine
+	// CODE WITHIN THE BLOCK BELOW IS WRITTEN BY Trisan Hughes
+	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+	virtual void Tick(float time) override;
 };
 
