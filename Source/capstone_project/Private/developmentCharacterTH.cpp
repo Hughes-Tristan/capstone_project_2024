@@ -64,7 +64,7 @@ AdevelopmentCharacter::AdevelopmentCharacter()
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // CODE WITHIN THE BLOCK ABOVE IS WRITTEN BY Unreal Engine
 // 
-// CODE WITHIN THE BLOCK BELOW IS WRITTEN BY Trisan Hughes
+// CODE WITHIN THE BLOCK BELOW IS WRITTEN BY Tristan Hughes
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	CameraBoom->SocketOffset = FVector(0.0f,55.0f,70.0f);
 	FRotator cameraRotation(0.0f, -10.0f, 0.0f);
@@ -115,7 +115,7 @@ void AdevelopmentCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInp
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // CODE WITHIN THE BLOCK ABOVE IS WRITTEN BY Unreal Engine
 // 
-// CODE WITHIN THE BLOCK BELOW IS WRITTEN BY Trisan Hughes
+// CODE WITHIN THE BLOCK BELOW IS WRITTEN BY Tristan Hughes
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		// crouching
 		EnhancedInputComponent->BindAction(CrouchAction, ETriggerEvent::Started, this, &AdevelopmentCharacter::shouldCrouch);
@@ -128,6 +128,8 @@ void AdevelopmentCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInp
 		EnhancedInputComponent->BindAction(SprintAction, ETriggerEvent::Completed, this, &AdevelopmentCharacter::stopSprinting);
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// CODE WITHIN THE BLOCK ABOVE IS WRITTEN BY Tristan Hughes
+// 
 // CODE WITHIN THE BLOCK ABOVE IS WRITTEN BY Unreal Engine
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////// 	
 	}
@@ -138,8 +140,9 @@ void AdevelopmentCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInp
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // CODE WITHIN THE BLOCK ABOVE IS WRITTEN BY Unreal Engine
 // 
-// CODE WITHIN THE BLOCK BELOW IS WRITTEN BY Trisan Hughes
+// CODE WITHIN THE BLOCK BELOW IS WRITTEN BY Tristan Hughes
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -168,17 +171,18 @@ void AdevelopmentCharacter::Move(const FInputActionValue& Value)
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // CODE WITHIN THE BLOCK ABOVE IS WRITTEN BY Unreal Engine
 // 
-// CODE WITHIN THE BLOCK BELOW IS WRITTEN BY Trisan Hughes
+// CODE WITHIN THE BLOCK BELOW IS WRITTEN BY Tristan Hughes
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 	}
 }
 
-void AdevelopmentCharacter::Look(const FInputActionValue& Value)
-{
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // CODE WITHIN THE BLOCK BELOW IS WRITTEN BY Unreal Engine
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+void AdevelopmentCharacter::Look(const FInputActionValue& Value)
+{
+
 	// input is a Vector2D
 	FVector2D LookAxisVector = Value.Get<FVector2D>();
 
@@ -193,7 +197,6 @@ void AdevelopmentCharacter::Look(const FInputActionValue& Value)
 // 
 // CODE WITHIN THE BLOCK BELOW IS WRITTEN BY Trisan Hughes
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
 
 }
 
@@ -254,9 +257,12 @@ void AdevelopmentCharacter::setAnimationState(const FInputActionValue& Value) {
 }
 
 void AdevelopmentCharacter::startSprinting(const FInputActionValue& Value) {
-	GetCharacterMovement()->MaxWalkSpeed = 600.f;
-	moveSpeed = 600.f;
+	if (isCrouching == false) {
+		GetCharacterMovement()->MaxWalkSpeed = 600.f;
+		moveSpeed = 600.f;
+	}
 }
+
 void AdevelopmentCharacter::stopSprinting(const FInputActionValue& Value) {
 	GetCharacterMovement()->MaxWalkSpeed = 300.f;
 	moveSpeed = 300.f;
