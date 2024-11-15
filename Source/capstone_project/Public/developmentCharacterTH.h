@@ -14,10 +14,24 @@ class UInputAction;
 struct FInputActionValue;
 
 DECLARE_LOG_CATEGORY_EXTERN(LogTemplateDevelopmentCharacter, Log, All);
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// CODE WITHIN THE BLOCK BELOW IS WRITTEN BY Tristan Hughes
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+UENUM(BlueprintType)
+enum class EPlayerState : uint8
+{
+	Unarmed UMETA(DisplayName = "Unarmed State"),
+	Rifle UMETA(DisplayName = "Rifle State"),
+	Pistol UMETA(DisplayName = "Pistol State"),
+};
 
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// CODE WITHIN THE BLOCK BELOW IS WRITTEN BY Unreal Engine
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 UCLASS()
 class AdevelopmentCharacter : public ACharacter
 {
+
 	GENERATED_BODY()
 
 	/** Camera boom positioning the camera behind the character */
@@ -44,6 +58,15 @@ class AdevelopmentCharacter : public ACharacter
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	UInputAction* LookAction;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	UInputAction* CrouchAction;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	UInputAction* SwitchAnimState;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	UInputAction* SprintAction;
+
 public:
 	AdevelopmentCharacter();
 
@@ -62,12 +85,42 @@ protected:
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
 	// To add mapping context
-	virtual void BeginPlay();
+	virtual void BeginPlay() override;
+
+	//virtual void tick() override;
 
 public:
 	/** Returns CameraBoom subobject **/
 	FORCEINLINE class USpringArmComponent* GetCameraBoom() const { return CameraBoom; }
 	/** Returns FollowCamera subobject **/
 	FORCEINLINE class UCameraComponent* GetFollowCamera() const { return FollowCamera; }
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// CODE WITHIN THE BLOCK ABOVE IS WRITTEN BY Unreal Engine
+// 
+// CODE WITHIN THE BLOCK BELOW IS WRITTEN BY Trisan Hughes
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	
+	// Functions
+	virtual void Tick(float time) override;
+	
+	void orientPlayerRotation();
+	void shouldCrouch(const FInputActionValue& Value);
+	void setAnimationState(const FInputActionValue& Value);
+	void startSprinting(const FInputActionValue& Value);
+	void stopSprinting(const FInputActionValue& Value);
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Animation State")
+	EPlayerState currentState;
+
+private:
+	UPROPERTY(BlueprintReadWrite, Category = "Movement", meta = (AllowPrivateAccess = "true"))
+	float moveSpeed;
+
+	UPROPERTY(BlueprintReadWrite, Category = "Crouch", meta = (AllowPrivateAccess = "true"))
+	bool isCrouching;
+	
 };
+
+
 
