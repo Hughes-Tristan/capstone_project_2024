@@ -1,8 +1,7 @@
-/.git
-/.github
-/.vs
-/.vscode
+/Saved
 /Content
 /DerivedDataCache
+/capstone_project (Mac).xcworkspace
+/.git
+/.vscode
 /Intermediate
-/Saved
