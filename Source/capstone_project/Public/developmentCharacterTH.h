@@ -106,9 +106,11 @@ public:
 	
 	void orientPlayerRotation();
 	void shouldCrouch(const FInputActionValue& Value);
-	void setAnimationState(const FInputActionValue& Value);
 	void startSprinting(const FInputActionValue& Value);
 	void stopSprinting(const FInputActionValue& Value);
+
+	void setAnimationState(const FInputActionValue& Value);
+	float setSmoothArmLength(float currentLength, float targetLength, float timeDelta);
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Animation State")
 	EPlayerState currentState;
@@ -119,6 +121,9 @@ private:
 
 	UPROPERTY(BlueprintReadWrite, Category = "Crouch", meta = (AllowPrivateAccess = "true"))
 	bool isCrouching;
+
+	float setCurrentLength = 250.0f;
+	float setTargetLength = 250.0f;
 	
 };
 
