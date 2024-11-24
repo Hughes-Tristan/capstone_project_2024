@@ -15,6 +15,7 @@
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "InputActionValue.h"
+#include "enemyDamage.h"
 
 DEFINE_LOG_CATEGORY(LogTemplateDevelopmentCharacter);
 
@@ -274,5 +275,30 @@ float AdevelopmentCharacter::setSmoothArmLength(float currentLength, float targe
 	newLength = FMath::FInterpTo(currentLength, targetLength, timeDelta, 10.0f);
 
 	return newLength;
+}
+
+void AdevelopmentCharacter::takeDamage(const UdamageInfo* damageInfo) {
+	if (damageInfo) {
+		if (damageComponent) {
+			damageComponent->applyDamage(damageInfo);
+		}
+	}
+}
+
+void AdevelopmentCharacter::doDamage(AActor* target) {
+	if (target) {
+		UdamageInfo* damageInfo = NewObject<UdamageInfo>();
+
+		damageInfo->damageAmount = 10.0;
+		damageInfo->damageType = EDamageType::LightAttack;
+		damageInfo->damageResponse = EDamageResponse::Melee;
+		damageInfo->isIndestructible = false;
+
+		AenemyDamage* enemyPresent = Cast<AenemyDamage>(target);
+
+		if (enemyPresent) {
+			enemyPresent->takeDamage(damageInfo);
+		}
+	}
 }
 

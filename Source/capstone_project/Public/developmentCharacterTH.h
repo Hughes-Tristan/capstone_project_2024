@@ -5,6 +5,9 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
 #include "Logging/LogMacros.h"
+
+#include "damageComponent.h"
+
 #include "developmentCharacterTH.generated.h"
 
 class USpringArmComponent;
@@ -115,12 +118,21 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Animation State")
 	EPlayerState currentState;
 
+	UFUNCTION(BlueprintCallable, Category = "Damage")
+	void takeDamage(const UdamageInfo* damageInfo);
+
+	UFUNCTION(BlueprintCallable, Category = "Damage")
+	void doDamage(AActor* target);
+
+
 private:
 	UPROPERTY(BlueprintReadWrite, Category = "Movement", meta = (AllowPrivateAccess = "true"))
 	float moveSpeed;
 
 	UPROPERTY(BlueprintReadWrite, Category = "Crouch", meta = (AllowPrivateAccess = "true"))
 	bool isCrouching;
+
+	UdamageComponent* damageComponent;
 
 	float setCurrentLength = 250.0f;
 	float setTargetLength = 250.0f;
