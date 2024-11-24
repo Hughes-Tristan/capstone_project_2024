@@ -12,13 +12,13 @@ AenemyDamage::AenemyDamage()
 
 }
 
-// Called when the game starts or when spawned
+// Called when the game starts or when spawned code by tristan hughes
 void AenemyDamage::BeginPlay()
 {
 	Super::BeginPlay();
 
 }
-
+//code by tristan hughes
 void AenemyDamage::takeDamage(const UdamageInfo* damageInfo) {
 	if (damageInfo) {
 		if (damageComponent) {
