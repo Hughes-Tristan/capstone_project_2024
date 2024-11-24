@@ -1,7 +1,9 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
+
 #include "enemycharacter1.h"
+#include "characterDamage.h"
 
 // Sets default values
 Aenemycharacter1::Aenemycharacter1()
@@ -32,3 +34,27 @@ void Aenemycharacter1::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 
 }
 
+//code by tristan hughes
+void Aenemycharacter1::takeDamage(const UdamageInfo* damageInfo) {
+    if (damageInfo) {
+        if (damageComponent) {
+            damageComponent->applyDamage(damageInfo);
+        }
+    }
+}
+
+void Aenemycharacter1::doDamage(AActor* target) {
+    if (target) {
+        UdamageInfo* damageInfo = NewObject<UdamageInfo>();
+
+        damageInfo->damageAmount = 10.0;
+        damageInfo->damageType = EDamageType::LightAttack;
+        damageInfo->damageResponse = EDamageResponse::Melee;
+        damageInfo->isIndestructible = false;
+
+        AcharacterDamage* mainPlayer = Cast<AcharacterDamage>(target);
+        if (mainPlayer) {
+            mainPlayer->takeDamage(damageInfo);
+        }
+    }
+}
