@@ -15,6 +15,7 @@
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "InputActionValue.h"
+#include "enemyDamage.h"
 
 DEFINE_LOG_CATEGORY(LogTemplateDevelopmentCharacter);
 
@@ -51,7 +52,7 @@ AdevelopmentCharacter::AdevelopmentCharacter()
 	// Create a camera boom (pulls in towards the player if there is a collision)
 	CameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraBoom"));
 	CameraBoom->SetupAttachment(RootComponent);
-	CameraBoom->TargetArmLength = 175.0f; // The camera follows at this distance behind the character	
+	CameraBoom->TargetArmLength = 250.0f; // The camera follows at this distance behind the character	
 	CameraBoom->bUsePawnControlRotation = true; // Rotate the arm based on the controller
 
 	// Create a follow camera
@@ -207,6 +208,8 @@ void AdevelopmentCharacter::Look(const FInputActionValue& Value)
 void AdevelopmentCharacter::Tick(float time) {
 	Super::Tick(time);
 	orientPlayerRotation();
+	setCurrentLength = setSmoothArmLength(setCurrentLength, setTargetLength, time);
+	CameraBoom->TargetArmLength = setCurrentLength;
 }
 
 void AdevelopmentCharacter::orientPlayerRotation() {
@@ -235,14 +238,13 @@ void AdevelopmentCharacter::shouldCrouch(const FInputActionValue& Value) {
 		GetCharacterMovement()->UnCrouch();
 		isCrouching = false;
 
-		CameraBoom->TargetArmLength = 175.0f;
+		setTargetLength = 250.0f;
 		GetCharacterMovement()->MaxWalkSpeed = 300.f;
-	}
-	else {
+	} else {
 		GetCharacterMovement()->Crouch();
 		isCrouching = true; 
 
-		CameraBoom->TargetArmLength = 125.0f;
+		setTargetLength = 200.0f;
 		GetCharacterMovement()->MaxWalkSpeed = 300.f;
 	}
 }
@@ -266,5 +268,37 @@ void AdevelopmentCharacter::startSprinting(const FInputActionValue& Value) {
 void AdevelopmentCharacter::stopSprinting(const FInputActionValue& Value) {
 	GetCharacterMovement()->MaxWalkSpeed = 300.f;
 	moveSpeed = 300.f;
+}
+
+float AdevelopmentCharacter::setSmoothArmLength(float currentLength, float targetLength, float timeDelta) {
+	float newLength;
+	newLength = FMath::FInterpTo(currentLength, targetLength, timeDelta, 10.0f);
+
+	return newLength;
+}
+
+void AdevelopmentCharacter::takeDamage(const UdamageInfo* damageInfo) {
+	if (damageInfo) {
+		if (damageComponent) {
+			damageComponent->applyDamage(damageInfo);
+		}
+	}
+}
+
+void AdevelopmentCharacter::doDamage(AActor* target) {
+	if (target) {
+		UdamageInfo* damageInfo = NewObject<UdamageInfo>();
+
+		damageInfo->damageAmount = 10.0;
+		damageInfo->damageType = EDamageType::LightAttack;
+		damageInfo->damageResponse = EDamageResponse::Melee;
+		damageInfo->isIndestructible = false;
+
+		AenemyDamage* enemyPresent = Cast<AenemyDamage>(target);
+
+		if (enemyPresent) {
+			enemyPresent->takeDamage(damageInfo);
+		}
+	}
 }
 
