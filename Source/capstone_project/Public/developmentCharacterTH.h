@@ -5,6 +5,9 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
 #include "Logging/LogMacros.h"
+
+#include "damageComponent.h"
+
 #include "developmentCharacterTH.generated.h"
 
 class USpringArmComponent;
@@ -106,12 +109,21 @@ public:
 	
 	void orientPlayerRotation();
 	void shouldCrouch(const FInputActionValue& Value);
-	void setAnimationState(const FInputActionValue& Value);
 	void startSprinting(const FInputActionValue& Value);
 	void stopSprinting(const FInputActionValue& Value);
 
+	void setAnimationState(const FInputActionValue& Value);
+	float setSmoothArmLength(float currentLength, float targetLength, float timeDelta);
+
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Animation State")
 	EPlayerState currentState;
+
+	UFUNCTION(BlueprintCallable, Category = "Damage")
+	void takeDamage(const UdamageInfo* damageInfo);
+
+	UFUNCTION(BlueprintCallable, Category = "Damage")
+	void doDamage(AActor* target);
+
 
 private:
 	UPROPERTY(BlueprintReadWrite, Category = "Movement", meta = (AllowPrivateAccess = "true"))
@@ -119,6 +131,11 @@ private:
 
 	UPROPERTY(BlueprintReadWrite, Category = "Crouch", meta = (AllowPrivateAccess = "true"))
 	bool isCrouching;
+
+	UdamageComponent* damageComponent;
+
+	float setCurrentLength = 250.0f;
+	float setTargetLength = 250.0f;
 	
 };
 

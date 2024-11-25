@@ -32,6 +32,7 @@ protected:
 
 private:
 
+    
 	//UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	UdamageComponent* damageComponent;
 
