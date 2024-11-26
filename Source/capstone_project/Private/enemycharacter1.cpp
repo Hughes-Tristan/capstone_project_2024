@@ -42,7 +42,7 @@ void Aenemycharacter1::takeDamage(const UdamageInfo* damageInfo) {
         }
     }
 }
-
+/// / / / / / / / / / / / / / / // / / / / // / / 
 void Aenemycharacter1::doDamage(AActor* target) {
     if (target) {
         UdamageInfo* damageInfo = NewObject<UdamageInfo>();
