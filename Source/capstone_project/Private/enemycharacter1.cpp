@@ -3,7 +3,7 @@
 
 
 #include "enemycharacter1.h"
-#include "characterDamage.h"
+#include "developmentCharacterTH.h"
 
 // Sets default values
 Aenemycharacter1::Aenemycharacter1()
@@ -52,7 +52,7 @@ void Aenemycharacter1::doDamage(AActor* target) {
         damageInfo->damageResponse = EDamageResponse::Melee;
         damageInfo->isIndestructible = false;
 
-        AcharacterDamage* mainPlayer = Cast<AcharacterDamage>(target);
+        AdevelopmentCharacter* mainPlayer = Cast<AdevelopmentCharacter>(target);
         if (mainPlayer) {
             mainPlayer->takeDamage(damageInfo);
         }
