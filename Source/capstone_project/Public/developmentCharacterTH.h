@@ -70,6 +70,9 @@ class AdevelopmentCharacter : public ACharacter
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	UInputAction* SprintAction;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	UInputAction* MeleeAction;
+
 public:
 	AdevelopmentCharacter();
 
@@ -111,6 +114,7 @@ public:
 	void shouldCrouch(const FInputActionValue& Value);
 	void startSprinting(const FInputActionValue& Value);
 	void stopSprinting(const FInputActionValue& Value);
+	void meleeAttack(const FInputActionValue& Value);
 
 	void setAnimationState(const FInputActionValue& Value);
 	float setSmoothArmLength(float currentLength, float targetLength, float timeDelta);
@@ -132,6 +136,10 @@ private:
 	UPROPERTY(BlueprintReadWrite, Category = "Crouch", meta = (AllowPrivateAccess = "true"))
 	bool isCrouching;
 
+	UPROPERTY(BlueprintReadWrite, Category = "Melee", meta = (AllowPrivateAccess = "true"))
+	float meleeDamageRange = 200.0f;
+
+	UPROPERTY(BlueprintReadWrite, Category = "Damage", meta = (AllowPrivateAccess = "true"))
 	UdamageComponent* damageComponent;
 
 	float setCurrentLength = 250.0f;
