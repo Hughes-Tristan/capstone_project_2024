@@ -29,6 +29,10 @@ void UdamageComponent::applyHealth(float healthAmount) {
 }
 
 void UdamageComponent::applyDamage(const UdamageInfo* damageInfo) {
+	if (damageInfo->isIndestructible || isDead) {
+		return;
+	}
+
 	ACharacter* player = Cast<ACharacter>(GetOwner());
 	if (!damageInfo->isIndestructible) {
 		float damageApplied = damageInfo->damageAmount;
@@ -54,10 +58,7 @@ void UdamageComponent::applyDamage(const UdamageInfo* damageInfo) {
 
 		if (health <= 0) {
 			health = 0;
-			ACharacter* targetCharacter = Cast<ACharacter>(GetOwner());
-			if (targetCharacter) {
-				targetCharacter->GetMesh()->SetSimulatePhysics(true);
-			}
+			death();
 		}
 		else {
 			switch (damageInfo->damageResponse) {
@@ -79,6 +80,13 @@ float UdamageComponent::getHealth() const {
 float UdamageComponent::getMaxHealth() const {
 	return maxHealth;
 }
+
+void UdamageComponent::death() {
+	isDead = true;
+	ACharacter* characterCast = Cast<ACharacter>(GetOwner());
+	characterCast->GetMesh()->SetSimulatePhysics(true);
+}
+
 
 /*// Called every frame
 void UdamageComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
