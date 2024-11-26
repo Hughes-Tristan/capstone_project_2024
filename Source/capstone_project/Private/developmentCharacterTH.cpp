@@ -15,7 +15,13 @@
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "InputActionValue.h"
-#include "enemyDamage.h"
+#include "enemycharacter1.h"
+
+// necessary libraries for attack feature
+#include "CollisionQueryParams.h"
+#include "CollisionShape.h"
+#include "Engine/OverlapResult.h"
+#include "Engine/HitResult.h"
 
 DEFINE_LOG_CATEGORY(LogTemplateDevelopmentCharacter);
 
@@ -127,6 +133,9 @@ void AdevelopmentCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInp
 		// sprinting
 		EnhancedInputComponent->BindAction(SprintAction, ETriggerEvent::Started, this, &AdevelopmentCharacter::startSprinting);
 		EnhancedInputComponent->BindAction(SprintAction, ETriggerEvent::Completed, this, &AdevelopmentCharacter::stopSprinting);
+
+		// melee attack
+		EnhancedInputComponent->BindAction(MeleeAction, ETriggerEvent::Triggered, this, &AdevelopmentCharacter::meleeAttack);
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // CODE WITHIN THE BLOCK ABOVE IS WRITTEN BY Tristan Hughes
@@ -260,14 +269,14 @@ void AdevelopmentCharacter::setAnimationState(const FInputActionValue& Value) {
 
 void AdevelopmentCharacter::startSprinting(const FInputActionValue& Value) {
 	if (isCrouching == false) {
-		GetCharacterMovement()->MaxWalkSpeed = 600.f;
-		moveSpeed = 600.f;
+		GetCharacterMovement()->MaxWalkSpeed = 750.f;
+		moveSpeed = 750.f;
 	}
 }
 
 void AdevelopmentCharacter::stopSprinting(const FInputActionValue& Value) {
-	GetCharacterMovement()->MaxWalkSpeed = 300.f;
-	moveSpeed = 300.f;
+	GetCharacterMovement()->MaxWalkSpeed = 350.f;
+	moveSpeed = 350.f;
 }
 
 float AdevelopmentCharacter::setSmoothArmLength(float currentLength, float targetLength, float timeDelta) {
@@ -294,11 +303,39 @@ void AdevelopmentCharacter::doDamage(AActor* target) {
 		damageInfo->damageResponse = EDamageResponse::Melee;
 		damageInfo->isIndestructible = false;
 
-		AenemyDamage* enemyPresent = Cast<AenemyDamage>(target);
+		Aenemycharacter1* enemyPresent = Cast<Aenemycharacter1>(target);
 
 		if (enemyPresent) {
 			enemyPresent->takeDamage(damageInfo);
 		}
 	}
+}
+
+void AdevelopmentCharacter::meleeAttack(const FInputActionValue& Value) {
+	TArray<FOverlapResult> storedHits;
+	FCollisionQueryParams queryParams;
+	FVector charPos;
+	float hitRadius;
+
+	hitRadius = meleeDamageRange;
+	charPos = GetActorLocation();
+
+	GetWorld()->OverlapMultiByChannel(storedHits, charPos, FQuat::Identity, ECC_Visibility, FCollisionShape::MakeSphere(hitRadius), queryParams);
+	for (int32 i = storedHits.Num() - 1; i >= 0; --i) {
+		const FOverlapResult& overlapResult = storedHits[i];
+		AActor* enemy = overlapResult.GetActor();
+		if (enemy != this) {
+			if (enemy) {
+				Aenemycharacter1* enemyChar = Cast<Aenemycharacter1>(enemy);
+				if (enemyChar) {
+					UdamageInfo* damageInfo = NewObject<UdamageInfo>();
+					enemyChar->takeDamage(damageInfo);
+				}
+			}
+		}
+	}
+
+	DrawDebugSphere(GetWorld(), charPos, hitRadius, 12, FColor::Green, false, 1.0, 0.2, 1.0);
+
 }
 

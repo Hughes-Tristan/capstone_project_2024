@@ -1,3 +1,4 @@
+
 // 
 // Code by: Tristan Hughes
 // Date: 10-14-24
@@ -11,12 +12,14 @@ notice in the Description page of Project Settings.
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
 #include "GameFramework/Character.h"
-#include "damageInfo.h" 
+#include "damageInterface.h"
+#include "damageInfo.h"
+
 #include "damageComponent.generated.h"
 
 
 UCLASS(ClassGroup = (Custom), meta = (BlueprintSpawnableComponent))
-class CAPSTONE_PROJECT_API UdamageComponent : public UActorComponent
+class CAPSTONE_PROJECT_API UdamageComponent : public UActorComponent, public IdamageInterface
 {
 	GENERATED_BODY()
 
@@ -25,16 +28,19 @@ public:
 	UdamageComponent();
 
 	UFUNCTION(BlueprintCallable, Category = "Damage")
-	void applyHealth(float healthAmount);
+	virtual void applyHealth(float healthAmount) override;
 
 	UFUNCTION(BlueprintCallable, Category = "Damage")
-	void applyDamage(const UdamageInfo* damageInfo);
+	virtual void applyDamage(const UdamageInfo* damageInfo) override;
 
 	UFUNCTION(BlueprintCallable, Category = "Damage")
-	float getHealth() const;
+	virtual float getHealth() const override;
 
 	UFUNCTION(BlueprintCallable, Category = "Damage")
-	float getMaxHealth() const;
+	virtual float getMaxHealth() const override;
+
+	UFUNCTION(BlueprintCallable, Category = "Damage")
+	void death();
 
 protected:
 	// Called when the game starts
@@ -43,6 +49,7 @@ protected:
 private:
 	float health;
 	const float maxHealth = 100;
+	bool isDead;
 	// Called every frame
 	//virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
