@@ -335,7 +335,7 @@ void AdevelopmentCharacter::meleeAttack(const FInputActionValue& Value) {
 		}
 	}
 
-	DrawDebugSphere(GetWorld(), charPos, hitRadius, 12, FColor::Green, false, 1.0, 0.2, 1.0);
+	//DrawDebugSphere(GetWorld(), charPos, hitRadius, 12, FColor::Green, false, 1.0, 0.2, 1.0);
 
 }
 
