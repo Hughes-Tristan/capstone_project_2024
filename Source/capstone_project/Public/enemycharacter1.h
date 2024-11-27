@@ -1,5 +1,7 @@
-// Fill out your copyright notice in the Description page of Project Settings.
 
+// Enemy character class for enemy behavior
+// Developer(s): Tristan Hughes, Joey Bertrand
+// Last Updated: 11-26-24
 
 #pragma once
 
@@ -8,6 +10,8 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
 #include "damagecomponent.h"
+#include "damageInfo.h"
+//#include "waveManager.h"
 //#include "enemycharacter1states.generated.h"
 #include "enemycharacter1.generated.h"
 
@@ -15,6 +19,9 @@
 class UanimationMontage;
 class UAttributeComponent;
 class Upawnsensingcomponent;
+
+
+class AwaveManager;
 
 
 UCLASS()
@@ -28,24 +35,32 @@ public:
 	Aenemycharacter1();
     
     
-    //tristan hughes
+    // Code written by Tristan Hughes
+	// these are functions and objects used in the damage system and wave manager
     UFUNCTION(BlueprintCallable, Category = "Damage")
     void takeDamage(const UdamageInfo* damageInfo);
 
     UFUNCTION(BlueprintCallable, Category = "Damage")
     void doDamage(AActor* target);
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////
-/*
-//code written by joey bertrand
+
+	UPROPERTY(BlueprintReadOnly, Category = "damage")
+	AActor* lastAttacker;
+
+	UPROPERTY()
+	AwaveManager* waveManager;
+
+	void destroy();
+
+    /*
+    // code written by joey bertrand
     UFUNCTION (BlueprintCallable, Category = "combat")
     void CheckCombatTarget();
     */
-    
-    
-    
-    
-    
 
+
+protected:
+	// Called when the game starts or when spawned
+	virtual void BeginPlay() override;
 
 public:	
 	// Called every frame
@@ -64,7 +79,7 @@ public:
 
     
 private:
-    
+	// damage component object
     UdamageComponent* damageComponent;
     /*
     UPROPERTY()

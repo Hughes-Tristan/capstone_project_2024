@@ -1,12 +1,18 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+
+// Main Character Class for controlling character movement and actions
+// Base Class is Unreal Engines Third Person Template Class
+// Developer(s): Tristan Hughes (designed from third person template class as a base for this code)
+// Last Updated: 11-26-24
 
 #pragma once
 
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
-#include "Logging/LogMacros.h"
 
+#include "Logging/LogMacros.h"
+#include "damageInfo.h"
 #include "damageComponent.h"
+#include "enemycharacter1.h"
 
 #include "developmentCharacterTH.generated.h"
 
@@ -20,6 +26,7 @@ DECLARE_LOG_CATEGORY_EXTERN(LogTemplateDevelopmentCharacter, Log, All);
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // CODE WITHIN THE BLOCK BELOW IS WRITTEN BY Tristan Hughes
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// this is an enum for controlling the player state
 UENUM(BlueprintType)
 enum class EPlayerState : uint8
 {
@@ -61,6 +68,8 @@ class AdevelopmentCharacter : public ACharacter
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	UInputAction* LookAction;
 
+
+	// input actions for given movements
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	UInputAction* CrouchAction;
 
@@ -107,29 +116,35 @@ public:
 // CODE WITHIN THE BLOCK BELOW IS WRITTEN BY Trisan Hughes
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	
-	// Functions
+	// 
 	virtual void Tick(float time) override;
 	
+	// function controls player rotation
 	void orientPlayerRotation();
+
+	// functions for controlling player actions
 	void shouldCrouch(const FInputActionValue& Value);
 	void startSprinting(const FInputActionValue& Value);
 	void stopSprinting(const FInputActionValue& Value);
 	void meleeAttack(const FInputActionValue& Value);
-
 	void setAnimationState(const FInputActionValue& Value);
 	float setSmoothArmLength(float currentLength, float targetLength, float timeDelta);
 
+	// function for controlling the playerstate
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Animation State")
 	EPlayerState currentState;
 
+	// fucntions for using the modular damage system
 	UFUNCTION(BlueprintCallable, Category = "Damage")
 	void takeDamage(const UdamageInfo* damageInfo);
 
 	UFUNCTION(BlueprintCallable, Category = "Damage")
 	void doDamage(AActor* target);
 
+	float meleeCooldown;
 
 private:
+	// private variables associated with character actions
 	UPROPERTY(BlueprintReadWrite, Category = "Movement", meta = (AllowPrivateAccess = "true"))
 	float moveSpeed;
 
@@ -141,6 +156,11 @@ private:
 
 	UPROPERTY(BlueprintReadWrite, Category = "Damage", meta = (AllowPrivateAccess = "true"))
 	UdamageComponent* damageComponent;
+
+	FTimerHandle timerHandle;
+	float meleeTimer;
+	bool canMelee;
+	void shouldMelee();
 
 	float setCurrentLength = 250.0f;
 	float setTargetLength = 250.0f;

@@ -1,5 +1,7 @@
-// Fill out your copyright notice in the Description page of Project Settings.
 
+// Damage Interface Class for Modular Damage System
+// Developer(s): Tristan Hughes 
+// Last Updated: 11-26-24
 #pragma once
 
 #include "CoreMinimal.h"
@@ -14,6 +16,7 @@ class UdamageInterface : public UInterface
 	GENERATED_BODY()
 };
 
+// damage interface for managing the modular damage system
 class CAPSTONE_PROJECT_API IdamageInterface
 {
 	GENERATED_BODY()
