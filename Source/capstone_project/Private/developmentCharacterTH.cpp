@@ -1,4 +1,8 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+
+// Main Character Class for controlling character movement and actions
+// Base Class is Unreal Engines Third Person Template Class
+// Developer(s): Tristan Hughes (designed from third person template class as a base for this code)
+// Last Updated: 11-26-24
 
 #include "developmentCharacterTH.h"
 
@@ -6,6 +10,7 @@
 // Template Base Code: Copyright Epic Games, Inc. All Rights Reserved.
 // Template base code used from third person character template used and expanded upon with compliance to Epic Games Unreal Engine EULA
 
+// all the necessary libraries
 #include "Engine/LocalPlayer.h"
 #include "Camera/CameraComponent.h"
 #include "Components/CapsuleComponent.h"
@@ -15,13 +20,15 @@
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "InputActionValue.h"
+#include "damageInfo.h"
 #include "enemycharacter1.h"
 
-// necessary libraries for attack feature
 #include "CollisionQueryParams.h"
 #include "CollisionShape.h"
 #include "Engine/OverlapResult.h"
 #include "Engine/HitResult.h"
+
+#include "TimerManager.h"
 
 DEFINE_LOG_CATEGORY(LogTemplateDevelopmentCharacter);
 
@@ -73,12 +80,20 @@ AdevelopmentCharacter::AdevelopmentCharacter()
 // 
 // CODE WITHIN THE BLOCK BELOW IS WRITTEN BY Tristan Hughes
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	
+
+	// initial camera state settings
 	CameraBoom->SocketOffset = FVector(0.0f,55.0f,70.0f);
 	FRotator cameraRotation(0.0f, -10.0f, 0.0f);
 
+	// inistial player state
 	currentState = EPlayerState::Unarmed;
 	//FollowCamera->AddRelativeRotation(cameraRotation);
-	
+
+	damageComponent = CreateDefaultSubobject<UdamageComponent>(TEXT("damage component initialization"));
+
+	meleeTimer = 0.05;
+	canMelee = true;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -124,6 +139,8 @@ void AdevelopmentCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInp
 // 
 // CODE WITHIN THE BLOCK BELOW IS WRITTEN BY Tristan Hughes
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+		
+		// input mappings for specific actions
 		// crouching
 		EnhancedInputComponent->BindAction(CrouchAction, ETriggerEvent::Started, this, &AdevelopmentCharacter::shouldCrouch);
 
@@ -135,7 +152,7 @@ void AdevelopmentCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInp
 		EnhancedInputComponent->BindAction(SprintAction, ETriggerEvent::Completed, this, &AdevelopmentCharacter::stopSprinting);
 
 		// melee attack
-		EnhancedInputComponent->BindAction(MeleeAction, ETriggerEvent::Triggered, this, &AdevelopmentCharacter::meleeAttack);
+		EnhancedInputComponent->BindAction(MeleeAction, ETriggerEvent::Started, this, &AdevelopmentCharacter::meleeAttack);
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // CODE WITHIN THE BLOCK ABOVE IS WRITTEN BY Tristan Hughes
@@ -214,6 +231,8 @@ void AdevelopmentCharacter::Look(const FInputActionValue& Value)
 // CODE WITHIN THE BLOCK BELOW IS WRITTEN BY Trisan Hughes
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+// this function is called every frame and it updates the character
+// it also is being used to smoothing set our character arm length when the player transitions arm lengths
 void AdevelopmentCharacter::Tick(float time) {
 	Super::Tick(time);
 	orientPlayerRotation();
@@ -221,6 +240,9 @@ void AdevelopmentCharacter::Tick(float time) {
 	CameraBoom->TargetArmLength = setCurrentLength;
 }
 
+// this function updates the player rotation based on his velocity
+// if the character is not moving he has a freely rotating camera
+// if the character is moving it should lock the player camera to the direction of the movement
 void AdevelopmentCharacter::orientPlayerRotation() {
 
 	FVector charVelocity = GetCharacterMovement()->Velocity;
@@ -242,6 +264,10 @@ void AdevelopmentCharacter::orientPlayerRotation() {
 	}
 }
 
+// this function is used to handle the crouch action
+// is crouching gets initialized to false but is triggered when the action is initiated
+// crouch if not crouch and uncrouch when crouched
+// changed walk speed and camera arm length based on state
 void AdevelopmentCharacter::shouldCrouch(const FInputActionValue& Value) {
 	if (isCrouching) {
 		GetCharacterMovement()->UnCrouch();
@@ -258,6 +284,8 @@ void AdevelopmentCharacter::shouldCrouch(const FInputActionValue& Value) {
 	}
 }
 
+// this function is used to control the player animation state
+// it changes state when triggered
 void AdevelopmentCharacter::setAnimationState(const FInputActionValue& Value) {
 	if (currentState == EPlayerState::Unarmed) {
 		currentState = EPlayerState::Rifle;
@@ -267,6 +295,8 @@ void AdevelopmentCharacter::setAnimationState(const FInputActionValue& Value) {
 	}
 }
 
+// this function is used to initiate the action of sprinting
+// if the player is crouching then they cant sprint
 void AdevelopmentCharacter::startSprinting(const FInputActionValue& Value) {
 	if (isCrouching == false) {
 		GetCharacterMovement()->MaxWalkSpeed = 750.f;
@@ -274,11 +304,13 @@ void AdevelopmentCharacter::startSprinting(const FInputActionValue& Value) {
 	}
 }
 
+// this function is used to stop the aciton of sprinting and return to walking
 void AdevelopmentCharacter::stopSprinting(const FInputActionValue& Value) {
 	GetCharacterMovement()->MaxWalkSpeed = 350.f;
 	moveSpeed = 350.f;
 }
 
+//this function is used to control how smoothly the camera transitions from one length to another
 float AdevelopmentCharacter::setSmoothArmLength(float currentLength, float targetLength, float timeDelta) {
 	float newLength;
 	newLength = FMath::FInterpTo(currentLength, targetLength, timeDelta, 10.0f);
@@ -286,6 +318,8 @@ float AdevelopmentCharacter::setSmoothArmLength(float currentLength, float targe
 	return newLength;
 }
 
+// this function is designed to handle the functionality for the player taking damage
+// if the function receives damage info then apply damage using the modular damage system
 void AdevelopmentCharacter::takeDamage(const UdamageInfo* damageInfo) {
 	if (damageInfo) {
 		if (damageComponent) {
@@ -294,48 +328,76 @@ void AdevelopmentCharacter::takeDamage(const UdamageInfo* damageInfo) {
 	}
 }
 
+// this function is designed to do damage to an actor
+// if an actor is detected than setup damage info for the attack
+// if the cast to the enemy character is successful it will do damage to the enemy
 void AdevelopmentCharacter::doDamage(AActor* target) {
 	if (target) {
+		
 		UdamageInfo* damageInfo = NewObject<UdamageInfo>();
 
 		damageInfo->damageAmount = 10.0;
 		damageInfo->damageType = EDamageType::LightAttack;
 		damageInfo->damageResponse = EDamageResponse::Melee;
 		damageInfo->isIndestructible = false;
+		damageInfo->attackingActor = this;
 
 		Aenemycharacter1* enemyPresent = Cast<Aenemycharacter1>(target);
 
 		if (enemyPresent) {
 			enemyPresent->takeDamage(damageInfo);
+	
 		}
 	}
 }
 
+
+//this function is designed to perform a melee atack
+// it perofrms a check for whether actors are ofverlapping withing a radius
+// if there is an enemy in the radius  then damage gets applied to all the actors in the radius
+// after a hit is complete in initials a cooldown timer
 void AdevelopmentCharacter::meleeAttack(const FInputActionValue& Value) {
 	TArray<FOverlapResult> storedHits;
+	TSet<AActor*> actorOverlap;
 	FCollisionQueryParams queryParams;
 	FVector charPos;
 	float hitRadius;
 
 	hitRadius = meleeDamageRange;
 	charPos = GetActorLocation();
+	queryParams.AddIgnoredActor(this);
+	if (canMelee) {
 
-	GetWorld()->OverlapMultiByChannel(storedHits, charPos, FQuat::Identity, ECC_Visibility, FCollisionShape::MakeSphere(hitRadius), queryParams);
-	for (int32 i = storedHits.Num() - 1; i >= 0; --i) {
-		const FOverlapResult& overlapResult = storedHits[i];
-		AActor* enemy = overlapResult.GetActor();
-		if (enemy != this) {
-			if (enemy) {
-				Aenemycharacter1* enemyChar = Cast<Aenemycharacter1>(enemy);
-				if (enemyChar) {
-					UdamageInfo* damageInfo = NewObject<UdamageInfo>();
-					enemyChar->takeDamage(damageInfo);
+
+		GetWorld()->OverlapMultiByChannel(storedHits, charPos, FQuat::Identity, ECC_Pawn, FCollisionShape::MakeSphere(hitRadius), queryParams);
+
+		for (int32 i = storedHits.Num() - 1; i >= 0; --i) {
+			const FOverlapResult& overlapResult = storedHits[i];
+			AActor* enemy = overlapResult.GetActor();
+			if (enemy && enemy != this) {
+				//doDamage(enemy);
+				if (!actorOverlap.Contains(enemy)) {
+					actorOverlap.Add(enemy);
+					doDamage(enemy);
 				}
+				canMelee = false;
+				GetWorldTimerManager().SetTimer(timerHandle, this, &AdevelopmentCharacter::shouldMelee, meleeTimer, false);
+
 			}
 		}
 	}
+	else {
+		UE_LOG(LogTemp, Warning, TEXT("attack cooldown"));
 
+	}
+	FColor sphereColor = storedHits.Num() > 0 ? FColor::Red : FColor::Green;
 	DrawDebugSphere(GetWorld(), charPos, hitRadius, 12, FColor::Green, false, 1.0, 0.2, 1.0);
 
+	
+}
+
+// this function is a setter for reseting the melee cooldown
+void AdevelopmentCharacter::shouldMelee() {
+	canMelee = true;
 }
 

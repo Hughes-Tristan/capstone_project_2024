@@ -1,5 +1,7 @@
-// Fill out your copyright notice in the Description page of Project Settings.
 
+// Main Gamemode Class for main character
+// Developer(s): Tristan Hughes 
+// Last Updated: 11-26-24
 
 #include "developmentGamemodeTH.h"
 #include "developmentCharacterTH.h"
