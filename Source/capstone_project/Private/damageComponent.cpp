@@ -63,7 +63,7 @@ void UdamageComponent::applyDamage(const UdamageInfo* damageInfo) {
 			break;
 
 		case EDamageType::HeavyAttack:
-			damageApplied = 49;
+			damageApplied = 51;
 			break;
 
 		default:
