@@ -14,6 +14,7 @@
 
 
 class AwaveManager;
+class USphereComponent;
 
 
 UCLASS()
@@ -35,14 +36,24 @@ public:
     UFUNCTION(BlueprintCallable, Category = "Damage")
     void doDamage(AActor* target);
 
-    UPROPERTY(BlueprintReadOnly, Category = "damage")
-    AActor* lastAttacker;
+	void shouldAttack();
+
+	// fucntion for automatically detecting collisions
+	UFUNCTION()
+	void OnAttackRangeOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
+
+	UPROPERTY(BlueprintReadOnly, Category = "damage")
+	AActor* lastAttacker;
 
     UPROPERTY()
     AwaveManager* waveManager;
 
-    void destroy();
-    
+	void destroy();
+
+	bool canAttack;
+	FTimerHandle timerHandle;
+	float cooldownTime;
+
 
 
 public:
@@ -58,10 +69,13 @@ public:
 
     
 private:
-    // damage component object
+	
+
+	// sphere component for tracing enemy damage box
+	//UPROPERTY(BlueprintReadOnly, Category = "damageSphere")
+	USphereComponent* sphereComponent;
+
+	// damage component object
     UdamageComponent* damageComponent;
- 
-protected:
-    // Called when the game starts or when spawned
-    virtual void BeginPlay() override;
+
 };

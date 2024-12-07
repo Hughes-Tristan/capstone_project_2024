@@ -31,6 +31,7 @@ UENUM(BlueprintType)
 enum class EPlayerState : uint8
 {
 	Unarmed UMETA(DisplayName = "Unarmed State"),
+	Melee UMETA(DisplayName = "Melee State"),
 	Rifle UMETA(DisplayName = "Rifle State"),
 	Pistol UMETA(DisplayName = "Pistol State"),
 };
@@ -126,7 +127,7 @@ public:
 	void shouldCrouch(const FInputActionValue& Value);
 	void startSprinting(const FInputActionValue& Value);
 	void stopSprinting(const FInputActionValue& Value);
-	void meleeAttack(const FInputActionValue& Value);
+	void meleeAttack();
 	void setAnimationState(const FInputActionValue& Value);
 	float setSmoothArmLength(float currentLength, float targetLength, float timeDelta);
 
@@ -141,6 +142,15 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Damage")
 	void doDamage(AActor* target);
 
+	UFUNCTION(BlueprintCallable, Category = "Damage")
+	void shouldAnimate(const FInputActionValue& Value);
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Animation")
+	UAnimMontage* attackMontage;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Timers")
+	FTimerHandle attackDelayHandle;
+
 	float meleeCooldown;
 
 private:
@@ -152,7 +162,7 @@ private:
 	bool isCrouching;
 
 	UPROPERTY(BlueprintReadWrite, Category = "Melee", meta = (AllowPrivateAccess = "true"))
-	float meleeDamageRange = 200.0f;
+	float meleeDamageRange = 70.0f;
 
 	UPROPERTY(BlueprintReadWrite, Category = "Damage", meta = (AllowPrivateAccess = "true"))
 	UdamageComponent* damageComponent;
