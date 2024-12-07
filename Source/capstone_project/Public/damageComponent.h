@@ -18,6 +18,7 @@ notice in the Description page of Project Settings.
 
 #include "damageComponent.generated.h"
 
+class uAttributeComponent;
 
 UCLASS(ClassGroup = (Custom), meta = (BlueprintSpawnableComponent))
 class CAPSTONE_PROJECT_API UdamageComponent : public UActorComponent, public IdamageInterface

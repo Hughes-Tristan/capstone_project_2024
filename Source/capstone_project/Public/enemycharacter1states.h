@@ -1,9 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
-
+/*
 #pragma once
 
-
-/*
 //code written by Joey Bertrand
 
 //blueprint enum for enemy weapon equipment
@@ -26,12 +24,12 @@ enum class EActionstate: uint8
 
 //enum for death animations
 UENUM(BlueprintType)
-enum class EDeathAnimation: uint8
+enum class EDeathPose: uint8
 {
     EDP_Alive UMETA (DisplayName = "Alive"),
-    EDP_Death1 UMETA (DisplayName = "Death 1"),
-    EDP_Death2 UMETA (DisplayName = "Death 2"),
-    EDP_Death3 UMETA (DIsplayName = "Death 3")
+    EDP_Death1 UMETA (DisplayName = "Death1"),
+    //EDP_Death2 UMETA (DisplayName = "Death2"),
+    //EDP_Death3 UMETA (DIsplayName = "Death3")
     
 };
 
@@ -43,4 +41,5 @@ enum class Eenemystate: uint8
     ES_Chasing UMETA (DisplayName = "chasing"),
     ES_Attacking UMETA (DisplayName = "Attacking")
 };
+
 */
