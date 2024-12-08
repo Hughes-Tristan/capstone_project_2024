@@ -8,6 +8,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
+#include "GameFramework/CharacterMovementComponent.h"
 
 #include "Logging/LogMacros.h"
 #include "damageInfo.h"
@@ -69,7 +70,7 @@ class AdevelopmentCharacter : public ACharacter
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	UInputAction* LookAction;
 
-
+	
 	// input actions for given movements
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	UInputAction* CrouchAction;
@@ -131,10 +132,6 @@ public:
 	void setAnimationState(const FInputActionValue& Value);
 	float setSmoothArmLength(float currentLength, float targetLength, float timeDelta);
 
-	// function for controlling the playerstate
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Animation State")
-	EPlayerState currentState;
-
 	// fucntions for using the modular damage system
 	UFUNCTION(BlueprintCallable, Category = "Damage")
 	void takeDamage(const UdamageInfo* damageInfo);
@@ -145,11 +142,23 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Damage")
 	void shouldAnimate(const FInputActionValue& Value);
 
+	UFUNCTION(BlueprintCallable, Category = "Character Status")
+	bool isDead();
+
+	UFUNCTION(BlueprintCallable, Category = "Input")
+	void shouldDisableInput();
+
+	// function for controlling the playerstate
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Animation State")
+	EPlayerState currentState;
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Animation")
 	UAnimMontage* attackMontage;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Timers")
 	FTimerHandle attackDelayHandle;
+
+
 
 	float meleeCooldown;
 
