@@ -49,13 +49,6 @@ Aenemycharacter1::Aenemycharacter1()
 void Aenemycharacter1::BeginPlay()
 {
 	Super::BeginPlay();
-    
-    //Speed randomizer
-    float RandomMoveSpeed = FMath::RandRange(MinSpeed, MaxSpeed);
-    if(GetCharacterMovement())
-    {
-        GetCharacterMovement()->MaxWalkSpeed = RandomMoveSpeed;
-    }
     waveManager = Cast<AwaveManager>(UGameplayStatics::GetActorOfClass(GetWorld(), AwaveManager::StaticClass()));
 }
 
@@ -114,7 +107,10 @@ void Aenemycharacter1::doDamage(AActor* target) {
     if (target) {
         UdamageInfo* damageInfo = NewObject<UdamageInfo>();
 
-        //damageInfo->damageAmount = 10.0; 
+        //Joey Bertrand
+        PlayAttackMontage();
+        
+        //damageInfo->damageAmount = 10.0;
         damageInfo->damageType = EDamageType::EnemyAttack;
         damageInfo->damageResponse = EDamageResponse::Melee;
         damageInfo->isIndestructible = false;
