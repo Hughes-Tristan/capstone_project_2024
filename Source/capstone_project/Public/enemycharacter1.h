@@ -45,13 +45,6 @@ public:
     UPROPERTY(EditAnywhere)
     double AttackRadius = 150.f;
     
-    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Movement")
-    float MinSpeed = 200.f;
-
-    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Movement")
-    float MaxSpeed= 350.f;
-    
-    
     // Code written by Tristan Hughes
     // these are functions and objects used in the damage system and wave manager
     UFUNCTION(BlueprintCallable, Category = "Damage")
@@ -118,6 +111,5 @@ private:
     //Joey Bertrand
     UPROPERTY(EditAnywhere, Category = "AI Navigation")
     float WaitMax = 10.f;
-    
 
 };
