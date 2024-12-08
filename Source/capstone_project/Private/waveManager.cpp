@@ -63,7 +63,7 @@ void AwaveManager::spawnBP() {
 	FRotator spawnRotation = spawnPoint->GetActorRotation();
 	FVector spawnLocation = spawnPoint->GetActorLocation();
 	FActorSpawnParameters spawnParameters;
-	Aenemycharacter1* enemySpawned = GetWorld()->SpawnActor<Aenemycharacter1>(blueprint, spawnLocation, spawnRotation, spawnParameters);
+    Aenemycharacter1* enemySpawned = GetWorld()->SpawnActor<Aenemycharacter1>(blueprint, spawnLocation, spawnRotation, spawnParameters);
 
 	if (enemySpawned) {
 		

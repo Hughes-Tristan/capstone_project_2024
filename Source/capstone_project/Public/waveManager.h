@@ -13,7 +13,7 @@ UCLASS()
 class CAPSTONE_PROJECT_API AwaveManager : public AActor
 {
 	GENERATED_BODY()
-	
+
 public:	
 	// Sets default values for this actor's properties
 	AwaveManager();
