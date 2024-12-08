@@ -238,6 +238,10 @@ void AdevelopmentCharacter::Tick(float time) {
 	orientPlayerRotation();
 	setCurrentLength = setSmoothArmLength(setCurrentLength, setTargetLength, time);
 	CameraBoom->TargetArmLength = setCurrentLength;
+
+	if (isDead()) {
+		shouldDisableInput();
+	}
 }
 
 // this function updates the player rotation based on his velocity
@@ -413,5 +417,19 @@ void AdevelopmentCharacter::shouldAnimate(const FInputActionValue& Value) {
 // this function is a setter for reseting the melee cooldown
 void AdevelopmentCharacter::shouldMelee() {
 	canMelee = true;
+}
+
+bool AdevelopmentCharacter::isDead() {
+	if (damageComponent) {
+		return damageComponent->isDead;
+	}
+	return false;
+}
+
+void AdevelopmentCharacter::shouldDisableInput() {
+	APlayerController* playerController = Cast<APlayerController>(GetController());
+	if (playerController) {
+		playerController->DisableInput(playerController);
+	}
 }
 
