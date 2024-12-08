@@ -22,7 +22,7 @@
 #include "InputActionValue.h"
 #include "damageInfo.h"
 #include "enemycharacter1.h"
-
+#include "enemyPatrolCharacter.h"
 #include "CollisionQueryParams.h"
 #include "CollisionShape.h"
 #include "Engine/OverlapResult.h"

@@ -58,6 +58,8 @@ void UdamageComponent::applyDamage(const UdamageInfo* damageInfo) {
 			damageApplied = 0.0;
 			TEXT("No Damage Taken");
 			break;
+            
+
 
 		case EDamageType::EnemyAttack:
 			damageApplied = 5;
