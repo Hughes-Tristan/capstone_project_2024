@@ -1,3 +1,4 @@
+/*
 // Fill out your copyright notice in the Description page of Project Settings.
 
 // Enemy character class for enemy behavior
@@ -5,7 +6,7 @@
 // Last Updated: 11-29-24
 
 
-/*#include "enemyPatrolCharacter.h"
+#include "enemyPatrolCharacter.h"
 #include "AIController.h"
 #include "Navigation/PathFollowingComponent.h"
 #include "AttributeComponent.h"
@@ -16,9 +17,9 @@
 #include "Perception/PawnSensingComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Kismet/KismetSystemLibrary.h"
-#include "DrawDebugHelpers.h"*/
+#include "DrawDebugHelpers.h"
 
-/*
+
 #include "enemyPatrolCharacter.h"
 #include "AIController.h"
 #include "Navigation/PathFollowingComponent.h"
