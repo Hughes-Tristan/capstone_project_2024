@@ -10,7 +10,14 @@
 #include "Engine/EngineTypes.h"
 #include "Kismet/GameplayStatics.h"
 #include "waveManager.h"
+#include "AIController.h"
+//#include "enemycharacter1states.h"
 #include "DrawDebugHelpers.h"
+#include "Components/SkeletalMeshComponent.h"
+#include "Components/CapsuleComponent.h"
+#include "GameFramework/Character.h"
+#include "GameFramework/CharacterMovementComponent.h"
+#include "CoreMinimal.h"
 
 // constructor used to initialize the damage component, wavemanager, and fix collision errors with the camera handling
 // also used to initialize components for enemy attacking
@@ -18,12 +25,12 @@ Aenemycharacter1::Aenemycharacter1()
 {
      // Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
     PrimaryActorTick.bCanEverTick = true;
-    
+
     damageComponent = CreateDefaultSubobject<UdamageComponent>(TEXT("damage component initialized"));
     waveManager = Cast<AwaveManager>(UGameplayStatics::GetActorOfClass(GetWorld(), AwaveManager::StaticClass()));
     GetCapsuleComponent()->SetCollisionResponseToChannel(ECC_Camera, ECR_Ignore);
     GetMesh()->SetCollisionResponseToChannel(ECC_Camera, ECR_Ignore);
-
+    
     // enemy attack initializations
     sphereComponent = CreateDefaultSubobject<USphereComponent>(TEXT("attackSphere"));
     sphereComponent->SetCollisionProfileName(TEXT("collisionOverlap"));
@@ -35,6 +42,7 @@ Aenemycharacter1::Aenemycharacter1()
 
     canAttack = true;
     cooldownTime = 1.0f;
+    EnemyState = EEnemyState::EES_Attacking;
 }
 
 // Called when the game starts or when spawned
@@ -80,7 +88,11 @@ void Aenemycharacter1::OnAttackRangeOverlapBegin(UPrimitiveComponent* Overlapped
     if (OtherActor && OtherActor != this && canAttack) {
 
         mainCharacter = Cast<AdevelopmentCharacter>(OtherActor);
-        if (mainCharacter) {
+        if (mainCharacter)
+        {
+            //Joey Bertrand
+            PlayAttackMontage();
+            
             doDamage(mainCharacter);
             canAttack = false;
             GetWorld()->GetTimerManager().SetTimer(timerHandle, this, &Aenemycharacter1::shouldAttack, cooldownTime, false);
@@ -99,15 +111,68 @@ void Aenemycharacter1::doDamage(AActor* target) {
         damageInfo->damageType = EDamageType::EnemyAttack;
         damageInfo->damageResponse = EDamageResponse::Melee;
         damageInfo->isIndestructible = false;
-
+        
         AdevelopmentCharacter* mainPlayer = Cast<AdevelopmentCharacter>(target);
         if (mainPlayer) {
             mainPlayer->takeDamage(damageInfo);
+
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
         }
     }
 }
 
+void Aenemycharacter1::PlayAttackMontage()
+{
+    
+    UAnimInstance* && AnimInstance = GetMesh()->GetAnimInstance();
+    
+    if (AnimInstance && AttackMontage)
+    {
+        AnimInstance->Montage_Play(AttackMontage);
+        const int32 RandomSelection = FMath::RandRange(0, 2);
+        
+        FName SectionName = FName();
+        switch(RandomSelection)
+        {
+            case 0:
+                        SectionName = FName("Attack 1");
+                break;
+                
+            case 1:
+                        SectionName = FName("Attack 2");
+                break;
+                
+            case 2:
+                        SectionName = FName("Attack 3");
+                
+            default:
+                    break;
+                
+                
+        }
+        AnimInstance->Montage_JumpToSection(SectionName, AttackMontage);
+    }
+}
+
+void Aenemycharacter1::CheckCombatTarget()
+{
+    if (InTargetRange(CombatTarget, AttackRadius) && EnemyState != EEnemyState::EES_Attacking)
+    {
+        EnemyState = EEnemyState::EES_Attacking;
+        //Animation Attack Montage called
+        PlayAttackMontage();
+        doDamage(CombatTarget);
+    }
+}
+
+bool Aenemycharacter1::InTargetRange(AActor* Target, double Radius)
+{
+    if(!Target) return false;
+    const double Distance = (Target->GetActorLocation() - GetActorLocation()).Size();
+
+    return Distance <= Radius;
+    
+}
 //code by tristan hughes
 // this function was create as part of the wavemanager system
 // it is designed in a way that if the actor we are targeting casts successfully and if the waveManager object is initialized correctly

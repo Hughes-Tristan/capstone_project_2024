@@ -1,5 +1,5 @@
 // Fill out your copyright notice in the Description page of Project Settings.
-/*
+
 #pragma once
 
 //code written by Joey Bertrand
@@ -35,11 +35,8 @@ enum class EDeathPose: uint8
 
 //enum for 3 character stages
 UENUM(BlueprintType)
-enum class Eenemystate: uint8
+enum class EEnemyState: uint8
 {
-    ES_PatrolTarget UMETA (DisplayName = "Unoccupied"),
-    ES_Chasing UMETA (DisplayName = "chasing"),
-    ES_Attacking UMETA (DisplayName = "Attacking")
+    EES_Attacking UMETA (DisplayName = "Attacking")
 };
 
-*/

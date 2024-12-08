@@ -10,11 +10,13 @@
 #include "GameFramework/Character.h"
 #include "damagecomponent.h"
 #include "damageInfo.h"
+#include "enemycharacter1states.h"
 #include "enemycharacter1.generated.h"
 
 
 class AwaveManager;
 class USphereComponent;
+class UAnimMontage;
 
 
 UCLASS()
@@ -27,6 +29,21 @@ public:
     // Sets default values for this character's properties
     Aenemycharacter1();
     
+    void CheckPatrolTarget();
+    void CheckCombatTarget();
+
+    UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category="Combat")
+    AActor* CombatTarget;
+    
+    UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category="Combat")
+    EEnemyState EnemyState;
+
+    //Joey Bertrand
+    UPROPERTY(EditAnywhere)
+    double CombatRadius = 500.f;
+    //Joey Bertrand
+    UPROPERTY(EditAnywhere)
+    double AttackRadius = 150.f;
     
     // Code written by Tristan Hughes
     // these are functions and objects used in the damage system and wave manager
@@ -57,6 +74,15 @@ public:
 protected:
     // Called when the game starts or when spawned
     virtual void BeginPlay() override;
+    //Joey Bertrand
+    virtual void PlayAttackMontage();
+    //Joey Bertrand
+    UPROPERTY(EditDefaultsOnly, Category = Montages)
+    UAnimMontage* AttackMontage;
+    //Joey Bertrand
+    bool InTargetRange(AActor* Target, double Radius);
+    void MoveToTarget(AActor* Target);
+    
 
 public:
     // Called every frame
@@ -71,7 +97,6 @@ public:
 
     
 private:
-	
 
 	// sphere component for tracing enemy damage box
 	//UPROPERTY(BlueprintReadOnly, Category = "damageSphere")
@@ -79,5 +104,12 @@ private:
 
 	// damage component object
     UdamageComponent* damageComponent;
+    
+    //Joey Bertrand
+    UPROPERTY(EditAnywhere, Category = "AI Navigation")
+    float WaitMin = 5.f;
+    //Joey Bertrand
+    UPROPERTY(EditAnywhere, Category = "AI Navigation")
+    float WaitMax = 10.f;
 
 };
