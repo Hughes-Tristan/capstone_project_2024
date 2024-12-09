@@ -28,7 +28,6 @@ UENUM(BlueprintType)
 enum class EDamageType : uint8
 {
 	None UMETA(DisplayName = "No Damage"),
-	EnemyAttack UMETA(DisplayName = "Enemy Damage"),
 	LightAttack UMETA(DisplayName = "Light Damage"),
 	HeavyAttack UMETA(DisplayName = "Heavy Damage"),
 };
