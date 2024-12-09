@@ -49,6 +49,12 @@ Aenemycharacter1::Aenemycharacter1()
 void Aenemycharacter1::BeginPlay()
 {
 	Super::BeginPlay();
+    
+    float RandomMoveSpeed = FMath::RandRange(MinSpeed, MaxSpeed);
+    
+    if(GetCharacterMovement()){
+        GetCharacterMovement()->MaxWalkSpeed = RandomMoveSpeed;
+    }
     waveManager = Cast<AwaveManager>(UGameplayStatics::GetActorOfClass(GetWorld(), AwaveManager::StaticClass()));
 }
 
