@@ -52,6 +52,11 @@ public:
 
     UFUNCTION(BlueprintCallable, Category = "Damage")
     void doDamage(AActor* target);
+    
+    UPROPERTY(EditAnywhere, BlueprintReadOnly)
+    float MinSpeed = 250.0f;
+    UPROPERTY(EditAnywhere, BlueprintReadOnly)
+    float MaxSpeed = 500.0f;
 
 	void shouldAttack();
 
