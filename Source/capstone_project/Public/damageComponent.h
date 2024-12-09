@@ -18,6 +18,7 @@ notice in the Description page of Project Settings.
 
 #include "damageComponent.generated.h"
 
+class uAttributeComponent;
 
 UCLASS(ClassGroup = (Custom), meta = (BlueprintSpawnableComponent))
 class CAPSTONE_PROJECT_API UdamageComponent : public UActorComponent, public IdamageInterface
@@ -45,6 +46,8 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Damage")
 	void death();
 
+	bool isDead;
+
 protected:
 	// Called when the game starts
 	virtual void BeginPlay() override;
@@ -53,7 +56,7 @@ private:
 
 	float health;
 	const float maxHealth = 100;
-	bool isDead;
+	//bool isDead;
 	// Called every frame
 	//virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
