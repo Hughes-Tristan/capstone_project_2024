@@ -22,7 +22,7 @@
 #include "InputActionValue.h"
 #include "damageInfo.h"
 #include "enemycharacter1.h"
-#include "enemyPatrolCharacter.h"
+
 #include "CollisionQueryParams.h"
 #include "CollisionShape.h"
 #include "Engine/OverlapResult.h"
@@ -152,7 +152,7 @@ void AdevelopmentCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInp
 		EnhancedInputComponent->BindAction(SprintAction, ETriggerEvent::Completed, this, &AdevelopmentCharacter::stopSprinting);
 
 		// melee attack
-		EnhancedInputComponent->BindAction(MeleeAction, ETriggerEvent::Started, this, &AdevelopmentCharacter::shouldAnimate);
+		EnhancedInputComponent->BindAction(MeleeAction, ETriggerEvent::Started, this, &AdevelopmentCharacter::meleeAttack);
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // CODE WITHIN THE BLOCK ABOVE IS WRITTEN BY Tristan Hughes
@@ -238,10 +238,6 @@ void AdevelopmentCharacter::Tick(float time) {
 	orientPlayerRotation();
 	setCurrentLength = setSmoothArmLength(setCurrentLength, setTargetLength, time);
 	CameraBoom->TargetArmLength = setCurrentLength;
-
-	if (isDead()) {
-		shouldDisableInput();
-	}
 }
 
 // this function updates the player rotation based on his velocity
@@ -292,7 +288,7 @@ void AdevelopmentCharacter::shouldCrouch(const FInputActionValue& Value) {
 // it changes state when triggered
 void AdevelopmentCharacter::setAnimationState(const FInputActionValue& Value) {
 	if (currentState == EPlayerState::Unarmed) {
-		currentState = EPlayerState::Melee;
+		currentState = EPlayerState::Rifle;
 	}
 	else {
 		currentState = EPlayerState::Unarmed;
@@ -341,7 +337,7 @@ void AdevelopmentCharacter::doDamage(AActor* target) {
 		UdamageInfo* damageInfo = NewObject<UdamageInfo>();
 
 		damageInfo->damageAmount = 10.0;
-		damageInfo->damageType = EDamageType::HeavyAttack;
+		damageInfo->damageType = EDamageType::LightAttack;
 		damageInfo->damageResponse = EDamageResponse::Melee;
 		damageInfo->isIndestructible = false;
 		damageInfo->attackingActor = this;
@@ -360,11 +356,11 @@ void AdevelopmentCharacter::doDamage(AActor* target) {
 // it perofrms a check for whether actors are ofverlapping withing a radius
 // if there is an enemy in the radius  then damage gets applied to all the actors in the radius
 // after a hit is complete in initials a cooldown timer
-void AdevelopmentCharacter::meleeAttack() {
+void AdevelopmentCharacter::meleeAttack(const FInputActionValue& Value) {
 	TArray<FOverlapResult> storedHits;
 	TSet<AActor*> actorOverlap;
 	FCollisionQueryParams queryParams;
-	FVector charPos, forwardVector, centerOfSphere;
+	FVector charPos;
 	float hitRadius;
 
 	hitRadius = meleeDamageRange;
@@ -380,9 +376,7 @@ void AdevelopmentCharacter::meleeAttack() {
 			AActor* enemy = overlapResult.GetActor();
 			if (enemy && enemy != this) {
 				//doDamage(enemy);
-		
 				if (!actorOverlap.Contains(enemy)) {
-					
 					actorOverlap.Add(enemy);
 					doDamage(enemy);
 				}
@@ -402,34 +396,8 @@ void AdevelopmentCharacter::meleeAttack() {
 	
 }
 
-void AdevelopmentCharacter::shouldAnimate(const FInputActionValue& Value) {
-	if (attackMontage) {
-		float montageTime;
-		montageTime = PlayAnimMontage(attackMontage, 2.0f);
-
-		float attackDelay;
-		attackDelay = montageTime /5;
-
-		GetWorldTimerManager().SetTimer(attackDelayHandle, this, &AdevelopmentCharacter::meleeAttack, attackDelay, false);
-	}
-}
-
 // this function is a setter for reseting the melee cooldown
 void AdevelopmentCharacter::shouldMelee() {
 	canMelee = true;
-}
-
-bool AdevelopmentCharacter::isDead() {
-	if (damageComponent) {
-		return damageComponent->isDead;
-	}
-	return false;
-}
-
-void AdevelopmentCharacter::shouldDisableInput() {
-	APlayerController* playerController = Cast<APlayerController>(GetController());
-	if (playerController) {
-		playerController->DisableInput(playerController);
-	}
 }
 

@@ -21,7 +21,6 @@ UdamageComponent::UdamageComponent() {
 	PrimaryComponentTick.bCanEverTick = true;
 	// Default Health Value
 	health = 100.0;
-	isDead = false;
 }
 
 
@@ -58,19 +57,13 @@ void UdamageComponent::applyDamage(const UdamageInfo* damageInfo) {
 			damageApplied = 0.0;
 			TEXT("No Damage Taken");
 			break;
-            
-
-
-		case EDamageType::EnemyAttack:
-			damageApplied = 5;
-			break;
 
 		case EDamageType::LightAttack:
 			damageApplied = 24;
 			break;
 
 		case EDamageType::HeavyAttack:
-			damageApplied = 51;
+			damageApplied = 49;
 			break;
 
 		default:
@@ -85,7 +78,6 @@ void UdamageComponent::applyDamage(const UdamageInfo* damageInfo) {
 		if (health <= 0) {
 			health = 0;
 			death();
-			isDead = true;
 		}
 		else {
 			switch (damageInfo->damageResponse) {
@@ -121,7 +113,7 @@ float UdamageComponent::getMaxHealth() const {
 // this function is responsible for handling death mechanics
 // it is used to properly set the actor to ragdoll and for the capsule collision to be removed after death
 void UdamageComponent::death() {
-	
+	isDead = true;
 	ACharacter* characterCast = Cast<ACharacter>(GetOwner());
 	characterCast->GetMesh()->SetSimulatePhysics(true);
 	characterCast->GetMesh()->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
@@ -131,8 +123,8 @@ void UdamageComponent::death() {
 	}
 	characterCast->GetCharacterMovement()->DisableMovement();
 
-	//Aenemycharacter1* enemyCharacter = Cast<Aenemycharacter1>(characterCast);
-	//enemyCharacter->destroy();
+	Aenemycharacter1* enemyCharacter = Cast<Aenemycharacter1>(characterCast);
+	enemyCharacter->destroy();
 	//characterCast->GetMesh()->WakeAllRigidBodies();
 }
 

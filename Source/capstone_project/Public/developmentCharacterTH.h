@@ -8,7 +8,6 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
-#include "GameFramework/CharacterMovementComponent.h"
 
 #include "Logging/LogMacros.h"
 #include "damageInfo.h"
@@ -32,7 +31,6 @@ UENUM(BlueprintType)
 enum class EPlayerState : uint8
 {
 	Unarmed UMETA(DisplayName = "Unarmed State"),
-	Melee UMETA(DisplayName = "Melee State"),
 	Rifle UMETA(DisplayName = "Rifle State"),
 	Pistol UMETA(DisplayName = "Pistol State"),
 };
@@ -70,7 +68,7 @@ class AdevelopmentCharacter : public ACharacter
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	UInputAction* LookAction;
 
-	
+
 	// input actions for given movements
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	UInputAction* CrouchAction;
@@ -128,9 +126,13 @@ public:
 	void shouldCrouch(const FInputActionValue& Value);
 	void startSprinting(const FInputActionValue& Value);
 	void stopSprinting(const FInputActionValue& Value);
-	void meleeAttack();
+	void meleeAttack(const FInputActionValue& Value);
 	void setAnimationState(const FInputActionValue& Value);
 	float setSmoothArmLength(float currentLength, float targetLength, float timeDelta);
+
+	// function for controlling the playerstate
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Animation State")
+	EPlayerState currentState;
 
 	// fucntions for using the modular damage system
 	UFUNCTION(BlueprintCallable, Category = "Damage")
@@ -138,27 +140,6 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Damage")
 	void doDamage(AActor* target);
-
-	UFUNCTION(BlueprintCallable, Category = "Damage")
-	void shouldAnimate(const FInputActionValue& Value);
-
-	UFUNCTION(BlueprintCallable, Category = "Character Status")
-	bool isDead();
-
-	UFUNCTION(BlueprintCallable, Category = "Input")
-	void shouldDisableInput();
-
-	// function for controlling the playerstate
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Animation State")
-	EPlayerState currentState;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Animation")
-	UAnimMontage* attackMontage;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Timers")
-	FTimerHandle attackDelayHandle;
-
-
 
 	float meleeCooldown;
 
@@ -171,7 +152,7 @@ private:
 	bool isCrouching;
 
 	UPROPERTY(BlueprintReadWrite, Category = "Melee", meta = (AllowPrivateAccess = "true"))
-	float meleeDamageRange = 70.0f;
+	float meleeDamageRange = 200.0f;
 
 	UPROPERTY(BlueprintReadWrite, Category = "Damage", meta = (AllowPrivateAccess = "true"))
 	UdamageComponent* damageComponent;
