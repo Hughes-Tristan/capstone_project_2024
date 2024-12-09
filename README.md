@@ -3,7 +3,7 @@ Developed with Unreal Engine 5
 
 University of Nevada, Reno <br />
 
-Carlos Hernandez, Tristan Hughes, Conner Marks, Joey Bertrand <br />
+Carlos Hernandez, Tristan Hughes, Joey Bertrand <br />
 
 Steps for Commiting: <br />
 
