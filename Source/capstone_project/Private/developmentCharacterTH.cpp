@@ -238,7 +238,8 @@ void AdevelopmentCharacter::Look(const FInputActionValue& Value)
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 // this function is called every frame and it updates the character
-// it also is being used to smoothing set our character arm length when the player transitions arm lengths
+// it also is being used to smoothly set our character arm length when the player transitions arm lengths
+// it is also checking if the player is dead, if the player is dead then it should disable the input
 void AdevelopmentCharacter::Tick(float time) {
 	Super::Tick(time);
 	orientPlayerRotation();
@@ -363,9 +364,9 @@ void AdevelopmentCharacter::doDamage(AActor* target) {
 
 
 //this function is designed to perform a melee atack
-// it perofrms a check for whether actors are ofverlapping withing a radius
+// it perofrms a check for whether actors are ofverlapping within a radius
 // if there is an enemy in the radius  then damage gets applied to all the actors in the radius
-// after a hit is complete in initials a cooldown timer
+// after a hit is complete it initials a cooldown timer
 void AdevelopmentCharacter::meleeAttack() {
 	TArray<FOverlapResult> storedHits;
 	TSet<AActor*> actorOverlap;
@@ -408,6 +409,8 @@ void AdevelopmentCharacter::meleeAttack() {
 	
 }
 
+// this function is used to trigger an animation for the attacking control
+// it also sets a timer for reseting the attack cooldown with respect to the animation
 void AdevelopmentCharacter::shouldAnimate(const FInputActionValue& Value) {
 	if (attackMontage) {
 		float montageTime;
@@ -425,6 +428,7 @@ void AdevelopmentCharacter::shouldMelee() {
 	canMelee = true;
 }
 
+// this function is used to check if the character is dead as long as a damage component exists
 bool AdevelopmentCharacter::isDead() {
 	if (damageComponent) {
 		return damageComponent->isDead;
@@ -432,6 +436,7 @@ bool AdevelopmentCharacter::isDead() {
 	return false;
 }
 
+// this function is used to disable input when the character is dead
 void AdevelopmentCharacter::shouldDisableInput() {
 	APlayerController* playerController = Cast<APlayerController>(GetController());
 	if (playerController) {

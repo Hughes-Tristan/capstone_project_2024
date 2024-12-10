@@ -33,7 +33,7 @@ enum class EDamageType : uint8
 	HeavyAttack UMETA(DisplayName = "Heavy Damage"),
 };
 
-
+// class for storing damage information
 UCLASS(BlueprintType)
 class CAPSTONE_PROJECT_API UdamageInfo : public UObject
 {

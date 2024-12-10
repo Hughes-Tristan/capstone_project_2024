@@ -1,7 +1,7 @@
 
 // Damage Component Class for modular damage system
 // Developer(s): Tristan Hughes 
-// Last Updated: 11-26-24
+// Last Updated: 12-10-24
 
 /*
 Look into copyright notice ? this comment was included when creating the class: Fill out your copyright
@@ -32,8 +32,6 @@ public:
 	// virtual functions from the damage interface
 	UFUNCTION(BlueprintCallable, Category = "Damage")
 	virtual void applyHealth(float healthAmount) override;
-
-	
 
 	UFUNCTION(BlueprintCallable, Category = "Damage")
 	virtual void applyDamage(const UdamageInfo* damageInfo) override;
