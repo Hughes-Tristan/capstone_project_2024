@@ -33,6 +33,8 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Damage")
 	virtual void applyHealth(float healthAmount) override;
 
+	
+
 	UFUNCTION(BlueprintCallable, Category = "Damage")
 	virtual void applyDamage(const UdamageInfo* damageInfo) override;
 
@@ -45,6 +47,9 @@ public:
 	// handles death physics
 	UFUNCTION(BlueprintCallable, Category = "Damage")
 	void death();
+
+	UFUNCTION(BlueprintCallable, Category = "Damage")
+	void applyDirectDamage(float damageAmount);
 
 	bool isDead;
 

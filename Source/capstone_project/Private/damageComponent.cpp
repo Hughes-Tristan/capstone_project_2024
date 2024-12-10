@@ -34,6 +34,16 @@ void UdamageComponent::BeginPlay() {
 // the ammount of health you want to be healed by is applied to the health
 void UdamageComponent::applyHealth(float healthAmount) {
 	health += healthAmount;
+
+}
+
+void UdamageComponent::applyDirectDamage(float damageAmount) {
+	health -= damageAmount;
+	if (health <= 0) {
+		health = 0;
+		death();
+		isDead = true;
+	}
 }
 
 // this function is used to apply damage to an actor
