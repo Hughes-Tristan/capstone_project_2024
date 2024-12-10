@@ -27,6 +27,7 @@
 #include "CollisionShape.h"
 #include "Engine/OverlapResult.h"
 #include "Engine/HitResult.h"
+#include "Blueprint/UserWidget.h"
 
 #include "TimerManager.h"
 
@@ -94,6 +95,8 @@ AdevelopmentCharacter::AdevelopmentCharacter()
 
 	meleeTimer = 0.05;
 	canMelee = true;
+
+	//widgetInstance = nullptr;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -104,6 +107,9 @@ void AdevelopmentCharacter::BeginPlay()
 {
 	// Call the base class  
 	Super::BeginPlay();
+	//widgetInstance = CreateWidget<UUserWidget>(GetWorld(), healthWidget);
+	//widgetInstance->AddToViewport();
+
 }
 
 
