@@ -1,6 +1,9 @@
-// Fill out your copyright notice in the Description page of Project Settings.
 
+// Enemy character class for enemy behavior
+// Developer(s): Tristan Hughes, Joey Bertrand
+// Last Updated: 12-10-24
 
+// necessary header files for enemy character functions
 #include "enemycharacter1.h"
 #include "developmentCharacterTH.h"
 #include "Components/PrimitiveComponent.h"
@@ -20,7 +23,7 @@
 #include "CoreMinimal.h"
 
 // constructor used to initialize the damage component, wavemanager, and fix collision errors with the camera handling
-// also used to initialize components for enemy attacking
+// also used to initialize components for enemy attacking adn sets the spawn chance for enemies dropping mushrooms
 Aenemycharacter1::Aenemycharacter1()
 {
      // Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
@@ -43,9 +46,14 @@ Aenemycharacter1::Aenemycharacter1()
     canAttack = true;
     cooldownTime = 1.0f;
     EnemyState = EEnemyState::EES_Attacking;
+
+    spawnPercent = .06;
 }
 
-// Called when the game starts or when spawned
+
+// this function is called when the actor spawns
+// sets a random movespeed for the character
+// checks if there is a wave manager in the world
 void Aenemycharacter1::BeginPlay()
 {
 	Super::BeginPlay();
@@ -59,6 +67,7 @@ void Aenemycharacter1::BeginPlay()
 }
 
 // Called every frame
+// this function includes debug sphere to visualize attack range
 void Aenemycharacter1::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
@@ -89,6 +98,9 @@ void Aenemycharacter1::takeDamage(const UdamageInfo* damageInfo) {
     }
 }
 
+// this function is an event function provided by the Character class and is triggered when an actor enters the range
+// it checks if the actor is valid, in range, and can attack
+// then check if the main character exists, player attack montage, do damage to main character, set attacking to false and begin attack cooldown
 void Aenemycharacter1::OnAttackRangeOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult) {
     AdevelopmentCharacter* mainCharacter;
     if (OtherActor && OtherActor != this && canAttack) {
@@ -179,11 +191,14 @@ bool Aenemycharacter1::InTargetRange(AActor* Target, double Radius)
     return Distance <= Radius;
     
 }
+
 //code by tristan hughes
-// this function was create as part of the wavemanager system
+// this function was created as part of the wavemanager system
 // it is designed in a way that if the actor we are targeting casts successfully and if the waveManager object is initialized correctly
 // then tell the wave manager that the actor died
 // destroy after 10 seconds
+// if there is a blueprint to spawn then determine the objects spawning based in its percent
+// then configure parametors for the actor and spawn the actor
 void Aenemycharacter1::destroy() {
     AdevelopmentCharacter* player = Cast<AdevelopmentCharacter>(lastAttacker);
     if (player && waveManager) {
@@ -192,8 +207,20 @@ void Aenemycharacter1::destroy() {
         }
     }
     SetLifeSpan(10.0);
+    if (spawnBP) {
+        if (FMath::RandRange(0, 1) <= spawnPercent) {
+            FActorSpawnParameters spawnParameters;
+            spawnParameters.Owner = this;
+            spawnParameters.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+
+            GetWorld()->SpawnActor<AActor>(spawnBP, GetActorLocation(), FRotator::ZeroRotator, spawnParameters);
+        }
+    }
+    
 }
 
+
+// used as a flag to reset the attack cooldown
 void Aenemycharacter1::shouldAttack() {
     canAttack = true;
 }
