@@ -47,7 +47,7 @@ Aenemycharacter1::Aenemycharacter1()
     cooldownTime = 1.0f;
     EnemyState = EEnemyState::EES_Attacking;
 
-    spawnPercent = .05;
+    spawnPercent = .04;
 }
 
 
