@@ -14,7 +14,6 @@
 #include "damageInfo.h"
 #include "damageComponent.h"
 #include "enemycharacter1.h"
-#include "Blueprint/UserWidget.h"
 #include "Templates/SubclassOf.h"
 
 
@@ -161,10 +160,6 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Timers")
 	FTimerHandle attackDelayHandle;
 
-	//UPROPERTY(EditAnywhere)
-	TSubclassOf<UUserWidget> healthWidget;
-
-	UUserWidget* widgetInstance;
 
 	float meleeCooldown;
 

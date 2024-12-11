@@ -27,7 +27,6 @@
 #include "CollisionShape.h"
 #include "Engine/OverlapResult.h"
 #include "Engine/HitResult.h"
-#include "Blueprint/UserWidget.h"
 
 #include "TimerManager.h"
 
