@@ -47,7 +47,7 @@ Aenemycharacter1::Aenemycharacter1()
     cooldownTime = 1.0f;
     EnemyState = EEnemyState::EES_Attacking;
 
-    spawnPercent = .06;
+    spawnPercent = .05;
 }
 
 
@@ -71,7 +71,7 @@ void Aenemycharacter1::BeginPlay()
 void Aenemycharacter1::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-    DrawDebugSphere(GetWorld(), sphereComponent->GetComponentLocation(), sphereComponent->GetScaledSphereRadius(), 12, FColor::Red, false, -1.0f, 0, 2.0f);
+    //DrawDebugSphere(GetWorld(), sphereComponent->GetComponentLocation(), sphereComponent->GetScaledSphereRadius(), 12, FColor::Red, false, -1.0f, 0, 2.0f);
 
 }
 
