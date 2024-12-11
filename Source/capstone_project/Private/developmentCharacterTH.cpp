@@ -403,7 +403,7 @@ void AdevelopmentCharacter::meleeAttack() {
 
 	}
 	FColor sphereColor = storedHits.Num() > 0 ? FColor::Red : FColor::Green;
-	DrawDebugSphere(GetWorld(), charPos, hitRadius, 12, FColor::Green, false, 1.0, 0, 1.0);
+	//DrawDebugSphere(GetWorld(), charPos, hitRadius, 12, FColor::Green, false, 1.0, 0, 1.0);
 
 	
 }
