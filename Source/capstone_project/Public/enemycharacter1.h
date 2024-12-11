@@ -1,7 +1,8 @@
+
 // Fill out your copyright notice in the Description page of Project Settings.
 // Enemy character class for enemy behavior
 // Developer(s): Tristan Hughes, Joey Bertrand
-// Last Updated: 11-26-24
+// Last Updated: 12-10-24
 
 #pragma once
 
@@ -18,7 +19,7 @@ class AwaveManager;
 class USphereComponent;
 class UAnimMontage;
 
-
+// this class is designed to control the enemy behavior for our enemy character
 UCLASS()
 class CAPSTONE_PROJECT_API Aenemycharacter1: public ACharacter
 {
@@ -75,6 +76,13 @@ public:
 	bool canAttack;
 	FTimerHandle timerHandle;
 	float cooldownTime;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    TSubclassOf<AActor> spawnBP;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    float spawnPercent;
+
 
 protected:
     // Called when the game starts or when spawned

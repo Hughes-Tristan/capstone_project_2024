@@ -1,7 +1,7 @@
 
 // Damage Component Class for modular damage system
 // Developer(s): Tristan Hughes 
-// Last Updated: 11-26-24
+// Last Updated: 12-10-24
 
 /*
 Look into copyright notice ? this comment was included when creating the class: Fill out your copyright
@@ -45,6 +45,9 @@ public:
 	// handles death physics
 	UFUNCTION(BlueprintCallable, Category = "Damage")
 	void death();
+
+	UFUNCTION(BlueprintCallable, Category = "Damage")
+	void applyDirectDamage(float damageAmount);
 
 	bool isDead;
 

@@ -9,6 +9,7 @@
 #include "enemycharacter1.h"
 #include "waveManager.generated.h"
 
+// this class is designed for managing the wave system
 UCLASS()
 class CAPSTONE_PROJECT_API AwaveManager : public AActor
 {
