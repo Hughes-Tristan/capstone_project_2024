@@ -1,7 +1,7 @@
 
 // Damage Component Class for Modular Damage System
 // Developer(s): Tristan Hughes 
-// Last Updated: 11-26-24
+// Last Updated: 12-10-24
 
 /*
 Look into copyright notice ? this comment was included when creating the class: Fill out your copyright
@@ -31,9 +31,29 @@ void UdamageComponent::BeginPlay() {
 }
 
 // this function is designed to heal an actor
+// if the player is dead then return
 // the ammount of health you want to be healed by is applied to the health
+// the amount of health you can get is clamped betweeen 0 and 100
 void UdamageComponent::applyHealth(float healthAmount) {
+
+	if (isDead) {
+		return;
+	}
+
 	health += healthAmount;
+	health = FMath::Clamp(health, 0, maxHealth);
+}
+
+
+// this function is designed to do direct damage to the actor
+// based on the damageamount do damage to health and check for if the player is dead or not
+void UdamageComponent::applyDirectDamage(float damageAmount) {
+	health -= damageAmount;
+	if (health <= 0) {
+		health = 0;
+		death();
+		isDead = true;
+	}
 }
 
 // this function is used to apply damage to an actor
