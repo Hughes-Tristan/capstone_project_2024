@@ -370,7 +370,7 @@ void AdevelopmentCharacter::meleeAttack() {
 	TArray<FOverlapResult> storedHits;
 	TSet<AActor*> actorOverlap;
 	FCollisionQueryParams queryParams;
-	FVector charPos, forwardVector, centerOfSphere;
+	FVector charPos;// forwardVector, centerOfSphere;
 	float hitRadius;
 
 	hitRadius = meleeDamageRange;
