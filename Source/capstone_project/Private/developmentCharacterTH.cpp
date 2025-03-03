@@ -50,7 +50,8 @@ AdevelopmentCharacter::AdevelopmentCharacter()
 	bUseControllerRotationRoll = false;
 
 	// Configure character movement
-	//GetCharacterMovement()->bOrientRotationToMovement = true; // Character moves in the direction of input...	
+	GetCharacterMovement()->bOrientRotationToMovement = false; // Character moves in the direction of input...	
+
 	GetCharacterMovement()->RotationRate = FRotator(0.0f, 500.0f, 0.0f); // ...at this rotation rate
 
 	// Note: For faster iteration times these variables, and many more, can be tweaked in the Character Blueprint
@@ -309,6 +310,7 @@ void AdevelopmentCharacter::setAnimationState(const FInputActionValue& Value) {
 // if the player is crouching then they cant sprint
 void AdevelopmentCharacter::startSprinting(const FInputActionValue& Value) {
 	if (isCrouching == false) {
+		isSprinting = true;
 		GetCharacterMovement()->MaxWalkSpeed = 750.f;
 		moveSpeed = 750.f;
 	}
@@ -316,6 +318,7 @@ void AdevelopmentCharacter::startSprinting(const FInputActionValue& Value) {
 
 // this function is used to stop the aciton of sprinting and return to walking
 void AdevelopmentCharacter::stopSprinting(const FInputActionValue& Value) {
+	isSprinting = false;
 	GetCharacterMovement()->MaxWalkSpeed = 350.f;
 	moveSpeed = 350.f;
 }

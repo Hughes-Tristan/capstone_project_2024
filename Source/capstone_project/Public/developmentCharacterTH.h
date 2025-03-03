@@ -171,6 +171,9 @@ private:
 	UPROPERTY(BlueprintReadWrite, Category = "Crouch", meta = (AllowPrivateAccess = "true"))
 	bool isCrouching;
 
+	UPROPERTY(BlueprintReadWrite, Category = "Sprint", meta = (AllowPrivateAccess = "true"))
+	bool isSprinting;
+
 	UPROPERTY(BlueprintReadWrite, Category = "Melee", meta = (AllowPrivateAccess = "true"))
 	float meleeDamageRange = 70.0f;
 
