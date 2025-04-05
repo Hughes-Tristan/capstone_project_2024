@@ -1,9 +1,9 @@
 
 /*******************************************************************************************
 *
-*   Damage Interface v1.0.0 - Damage Interface Class for Modular Damage System
+*   Stamina Bar v1.0.0 - Stamina Bar Class for Widget Blueprint
 *
-*   Last Modified: 11-26-24
+*   Last Modified: 4-5-25
 *
 *   MODULE USAGE:
 *	** Module usage section WIP **
@@ -23,26 +23,23 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "UObject/Interface.h"
-#include "damageInfo.h"
-#include "damageInterface.generated.h"
+#include "Blueprint/UserWidget.h"
+#include "StaminaBar.generated.h"
 
-// This class does not need to be modified.
-UINTERFACE(MinimalAPI)
-class UdamageInterface : public UInterface
-{
-	GENERATED_BODY()
-};
-
-// damage interface for managing the modular damage system
-class CAPSTONE_PROJECT_API IdamageInterface
+/**
+ * 
+ */
+// this class is used to represent the stamina bar widget for the user interface
+UCLASS()
+class CAPSTONE_PROJECT_API UStaminaBar : public UUserWidget
 {
 	GENERATED_BODY()
 
 public:
-	virtual void applyHealth(float healthAmount) = 0;
-	virtual void applyDamage(const UdamageInfo* damageInfo) = 0;
-	virtual float getHealth() const = 0;
-	virtual float getMaxHealth() const = 0;
-};
+    // constructor
+    UStaminaBar(const FObjectInitializer& ObjectInitializer = FObjectInitializer::Get());
 
+    // reference to the progress bar widget class 
+    UPROPERTY(meta = (BindWidget))
+    class UProgressBar* staminaBar;
+};

@@ -1,8 +1,29 @@
 
-// Main Character Class for controlling character movement and actions
-// Base Class is Unreal Engines Third Person Template Class
-// Developer(s): Tristan Hughes (designed from third person template class as a base for this code)
-// Last Updated: 11-26-24
+/*******************************************************************************************
+*
+*   Main Character v1.0.0 - Main Character Class for Controlling Character Movement and Actions
+*
+*   Last Modified: 4-5-25
+*
+*   MODULE USAGE:
+*	** Module usage section WIP **
+*
+*   DISCLAIMER: The "Module Usage" section of this header comment was generated with the assistance of generative AI.
+*
+*   LICENSE: Personal Use
+*
+*   Copyright © 2025 Tristan Hughes and 2025 UNR Capstone Team 10. All Rights Reserved.
+*   This software is based on Unreal Engine (© 1998-2025 Epic Games, Inc.), and is subject to the terms of Unreal Engine's End User License Agreement (EULA).
+*   Unauthorized use, reproduction, or distribution of this code, or parts of it, without proper authorization is prohibited.
+*   
+*   Unreal Engine’s base code and components are used under the Unreal Engine License, which can be reviewed at:
+*   https://www.unrealengine.com/en-US/eula
+* 
+*   Unauthorized copying of this file, via any medium is strictly prohibited
+*   This project is personal and confidential unless stated otherwise.
+*   Permission for use in any form must be granted in writing by Tristan Hughes and the 2025 UNR Capstone Team 10.
+*
+**********************************************************************************************/
 
 #pragma once
 
@@ -15,6 +36,11 @@
 #include "damageComponent.h"
 #include "enemycharacter1.h"
 #include "Templates/SubclassOf.h"
+
+#include "StaminaComponent.h"
+#include "StaminaBar.h"
+#include "Components/ProgressBar.h"
+
 
 
 #include "developmentCharacterTH.generated.h"
@@ -120,13 +146,15 @@ public:
 // CODE WITHIN THE BLOCK BELOW IS WRITTEN BY Trisan Hughes
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	
-	// 
+	// called every frame
 	virtual void Tick(float time) override;
 	
 	// function controls player rotation
 	void orientPlayerRotation();
 
 	// functions for controlling player actions
+	virtual void Jump() override;
+
 	void shouldCrouch(const FInputActionValue& Value);
 	void startSprinting(const FInputActionValue& Value);
 	void stopSprinting(const FInputActionValue& Value);
@@ -160,6 +188,16 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Timers")
 	FTimerHandle attackDelayHandle;
 
+	//functions for controlling stamina
+	UFUNCTION(BlueprintCallable, Category = "Stamina")
+	float getStaminaAmount() const;
+
+	UFUNCTION(BlueprintCallable, Category = "Stamina")
+	bool isStaminaAvailable(float staminaNeeded) const;
+
+	UFUNCTION(BlueprintCallable, Category = "Stamina")
+	bool tryUseStamina(float staminaNeeded);
+
 
 	float meleeCooldown;
 
@@ -187,7 +225,35 @@ private:
 
 	float setCurrentLength = 250.0f;
 	float setTargetLength = 250.0f;
-	
+
+	// stamina variables
+	//UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	UStaminaComponent* staminaComponent;
+
+	UPROPERTY(EditAnywhere, Category = "Stamina", meta = (AllowPrivateAccess = "true"))
+	float staminaCostEverySecond;
+
+	UPROPERTY(EditAnywhere, Category = "Stamina", meta = (AllowPrivateAccess = "true"))
+	float meleeStaminaCost;
+
+	UPROPERTY(EditAnywhere, Category = "Stamina", meta = (AllowPrivateAccess = "true"))
+	float jumpStaminaCost;
+
+	void sprintStamina();
+	FTimerHandle sprintStaminaTH;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UI", meta = (AllowPrivateAccess = "true"))
+	TSubclassOf<class UStaminaBar> staminaBarClass;
+
+	UPROPERTY()
+	class UStaminaBar* staminaBarWidget;
+
+	float displayedStamina;
+
+	FVector2D defaultBarScale = FVector2D(1.0f, 1.0f);
+
+	UPROPERTY(EditAnywhere)
+	float staminaSmoothingSpeed = 4.0f;
 };
 
 
