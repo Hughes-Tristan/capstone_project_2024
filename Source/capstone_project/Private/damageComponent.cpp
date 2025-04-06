@@ -12,7 +12,7 @@
 *
 *   LICENSE: Personal Use
 *
-*   Copyright © 2025 Tristan Hughes and 2025 UNR Capstone Team 10. All Rights Reserved.
+*   Copyright (c) 2025 Tristan Hughes and 2025 UNR Capstone Team 10. All Rights Reserved.
 *
 *   Unauthorized copying of this file, via any medium is strictly prohibited
 *   This project is personal and confidential unless stated otherwise.
@@ -168,11 +168,11 @@ void UdamageComponent::death() {
 	//characterCast->GetMesh()->WakeAllRigidBodies();
 }
 
-/*// this is called every frame, should be set to true in the constructor
-void UdamageComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
-{
-	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
+// this is called every frame, should be set to true in the constructor
+//void UdamageComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
+//{
+	//Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
 	// ...
-}*/
+//}
 

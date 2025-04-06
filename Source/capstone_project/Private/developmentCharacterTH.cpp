@@ -121,6 +121,7 @@ AdevelopmentCharacter::AdevelopmentCharacter()
 	staminaComponent = CreateDefaultSubobject<UStaminaComponent>(TEXT("Stamina Component"));
 	displayedStamina = 1.0f;
 	//widgetInstance = nullptr;
+	isAttacking = false;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -497,9 +498,8 @@ void AdevelopmentCharacter::meleeAttack() {
 	hitRadius = meleeDamageRange;
 	charPos = GetActorLocation();
 	queryParams.AddIgnoredActor(this);
-	if (canMelee) {
 
-
+	//if (isAttacking) {
 		GetWorld()->OverlapMultiByChannel(storedHits, charPos, FQuat::Identity, ECC_Pawn, FCollisionShape::MakeSphere(hitRadius), queryParams);
 
 		for (int32 i = storedHits.Num() - 1; i >= 0; --i) {
@@ -513,27 +513,31 @@ void AdevelopmentCharacter::meleeAttack() {
 					actorOverlap.Add(enemy);
 					doDamage(enemy);
 				}
-				canMelee = false;
-				GetWorldTimerManager().SetTimer(timerHandle, this, &AdevelopmentCharacter::shouldMelee, meleeTimer, false);
+				//canMelee = false;
+				//GetWorldTimerManager().SetTimer(timerHandle, this, &AdevelopmentCharacter::shouldMelee, meleeTimer, false);
 
+				FColor sphereColor = storedHits.Num() > 0 ? FColor::Red : FColor::Green;
+				DrawDebugSphere(GetWorld(), charPos, hitRadius, 12, FColor::Green, false, 1.0, 0, 1.0);
 			}
 		}
-	}
-	else {
-		UE_LOG(LogTemp, Warning, TEXT("attack cooldown"));
+	//}
+	//else {
+	//	UE_LOG(LogTemp, Warning, TEXT("attack cooldown"));
 
-	}
-	FColor sphereColor = storedHits.Num() > 0 ? FColor::Red : FColor::Green;
-	//DrawDebugSphere(GetWorld(), charPos, hitRadius, 12, FColor::Green, false, 1.0, 0, 1.0);
+	//}
+
 
 	
 }
 
 // this function is used to trigger an animation for the attacking control
 // it also sets a timer for reseting the attack cooldown with respect to the animation
+// cooldown for attacking has also been added to fix a melee bug
 void AdevelopmentCharacter::shouldAnimate(const FInputActionValue& Value) {
 	//if (tryUseStamina(meleeStaminaCost)) {
+	if (!isAttacking) {
 		if (attackMontage) {
+			isAttacking = true;
 			float montageTime;
 			montageTime = PlayAnimMontage(attackMontage, 2.0f);
 
@@ -541,7 +545,11 @@ void AdevelopmentCharacter::shouldAnimate(const FInputActionValue& Value) {
 			attackDelay = montageTime / 5;
 
 			GetWorldTimerManager().SetTimer(attackDelayHandle, this, &AdevelopmentCharacter::meleeAttack, attackDelay, false);
+
+			GetWorldTimerManager().SetTimer(meleeCooldownTimeHandle, this, &AdevelopmentCharacter::animationEnded, montageTime* 0.25f, false);
 		}
+	}
+		
 	//}
 	
 }
@@ -617,4 +625,9 @@ void AdevelopmentCharacter::Jump() {
 		UE_LOG(LogTemp, Warning, TEXT("not enough stamina to jump"));
 	}
 }
+
+void AdevelopmentCharacter::animationEnded() {
+	isAttacking = false;
+}
+
 

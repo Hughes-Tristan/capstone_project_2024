@@ -223,6 +223,13 @@ private:
 	bool canMelee;
 	void shouldMelee();
 
+	bool isAttacking;
+	FTimerHandle meleeCooldownTimeHandle;
+
+	void animationEnded();
+
+
+
 	float setCurrentLength = 250.0f;
 	float setTargetLength = 250.0f;
 
