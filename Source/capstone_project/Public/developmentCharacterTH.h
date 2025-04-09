@@ -42,6 +42,15 @@
 #include "Components/ProgressBar.h"
 
 
+#include "Sound/SoundCue.h"
+#include "Particles/ParticleSystem.h"
+#include "Particles/ParticleSystemComponent.h"
+#include "Components/AudioComponent.h"
+#include "Kismet/GameplayStatics.h"
+
+#include "NiagaraSystem.h"
+#include "NiagaraComponent.h"
+#include "NiagaraFunctionLibrary.h"
 
 #include "developmentCharacterTH.generated.h"
 
@@ -50,6 +59,9 @@ class UCameraComponent;
 class UInputMappingContext;
 class UInputAction;
 struct FInputActionValue;
+
+class UNiagaraSystem;
+class UNiagaraComponent;
 
 DECLARE_LOG_CATEGORY_EXTERN(LogTemplateDevelopmentCharacter, Log, All);
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -259,8 +271,56 @@ private:
 
 	FVector2D defaultBarScale = FVector2D(1.0f, 1.0f);
 
+	// audio variables
 	UPROPERTY(EditAnywhere)
 	float staminaSmoothingSpeed = 4.0f;
+
+	UPROPERTY(EditAnywhere)
+	USoundCue* meleeSound;
+
+	UPROPERTY(EditAnywhere)
+	USoundCue* meleeHitSound;
+
+	UPROPERTY(EditAnywhere)
+	UAudioComponent* audioComp;
+
+	UPROPERTY(EditAnywhere)
+	float meleeAudioDelay;
+
+	UPROPERTY(EditAnywhere)
+	float minPitch;
+
+	UPROPERTY(EditAnywhere)
+	float maxPitch;
+
+	FTimerHandle meleeAudioTimerHandle;
+
+	void playDelayedAudio();
+
+	// particle variables
+	UPROPERTY(EditAnywhere)
+	UNiagaraSystem* meleeSwing;
+
+	UPROPERTY(EditAnywhere)
+	UParticleSystem* meleeHitParticle;
+
+	UPROPERTY(EditAnywhere)
+	UParticleSystemComponent* particleComp;
+
+	// socket variable
+	UPROPERTY(EditAnywhere)
+	FName weaponSocket;
+
+	// effects methods
+
+	void playSwingEffect();
+
+	void playHitEffect(const FVector& hitLocation);
+
+	// camerashake
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<UCameraShakeBase> meleeCameraShake;
+
 };
 
 

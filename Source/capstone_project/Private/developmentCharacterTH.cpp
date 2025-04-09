@@ -122,6 +122,22 @@ AdevelopmentCharacter::AdevelopmentCharacter()
 	displayedStamina = 1.0f;
 	//widgetInstance = nullptr;
 	isAttacking = false;
+
+	audioComp = CreateDefaultSubobject<UAudioComponent>(TEXT("AudioComponent"));
+	audioComp->SetupAttachment(RootComponent);
+	audioComp->bAutoActivate = false;
+	minPitch = 0.6f;
+	maxPitch = 1.4f;
+	meleeAudioDelay = 0.2f;
+
+	particleComp = CreateDefaultSubobject<UParticleSystemComponent>(TEXT("ParticleSystemComponent"));
+	particleComp->SetupAttachment(RootComponent);
+	particleComp->bAutoActivate = false;
+
+	weaponSocket = FName("weapon_r");
+
+
+
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -334,14 +350,12 @@ void AdevelopmentCharacter::Tick(float time) {
 			FVector2D updatedScale = defaultBarScale * pulseScale;
 
 			FWidgetTransform transform;
-				//staminaBarWidget->staminaBar->GetRenderTransform();
 			transform.Scale = FVector2d(pulseScale, pulseScale);
 			staminaBarWidget->staminaBar->SetRenderTransform(transform);
 		}
 		else {
 			staminaBarWidget->staminaBar->SetRenderOpacity(1.0f);
 			FWidgetTransform transform;
-			//= staminaBarWidget->staminaBar->GetRenderTransform();
 			transform.Scale = defaultBarScale;
 			staminaBarWidget->staminaBar->SetRenderTransform(transform);
 		}
@@ -486,7 +500,8 @@ void AdevelopmentCharacter::doDamage(AActor* target) {
 
 //this function is designed to perform a melee atack
 // it perofrms a check for whether actors are ofverlapping within a radius
-// if there is an enemy in the radius  then damage gets applied to all the actors in the radius
+// if there is an enemy in the radius then damage gets applied to all the actors in the radius
+// and a hit effect occurs at the hit location
 // after a hit is complete it initials a cooldown timer
 void AdevelopmentCharacter::meleeAttack() {
 	TArray<FOverlapResult> storedHits;
@@ -499,42 +514,38 @@ void AdevelopmentCharacter::meleeAttack() {
 	charPos = GetActorLocation();
 	queryParams.AddIgnoredActor(this);
 
-	//if (isAttacking) {
-		GetWorld()->OverlapMultiByChannel(storedHits, charPos, FQuat::Identity, ECC_Pawn, FCollisionShape::MakeSphere(hitRadius), queryParams);
 
-		for (int32 i = storedHits.Num() - 1; i >= 0; --i) {
-			const FOverlapResult& overlapResult = storedHits[i];
-			AActor* enemy = overlapResult.GetActor();
-			if (enemy && enemy != this) {
-				//doDamage(enemy);
+	GetWorld()->OverlapMultiByChannel(storedHits, charPos, FQuat::Identity, ECC_Pawn, FCollisionShape::MakeSphere(hitRadius), queryParams);
+
+	bool hitEnemy = false;
+	FVector hitLocation = charPos;
+
+	for (int32 i = storedHits.Num() - 1; i >= 0; --i) {
+		const FOverlapResult& overlapResult = storedHits[i];
+		AActor* enemy = overlapResult.GetActor();
+		if (enemy && enemy != this) {
 		
-				if (!actorOverlap.Contains(enemy)) {
+			if (!actorOverlap.Contains(enemy)) {
 					
-					actorOverlap.Add(enemy);
-					doDamage(enemy);
-				}
-				//canMelee = false;
-				//GetWorldTimerManager().SetTimer(timerHandle, this, &AdevelopmentCharacter::shouldMelee, meleeTimer, false);
+				actorOverlap.Add(enemy);
+				doDamage(enemy);
 
-				FColor sphereColor = storedHits.Num() > 0 ? FColor::Red : FColor::Green;
-				DrawDebugSphere(GetWorld(), charPos, hitRadius, 12, FColor::Green, false, 1.0, 0, 1.0);
+				hitEnemy = true;
+				hitLocation = enemy->GetActorLocation();
+				playHitEffect(hitLocation);
 			}
+
+			FColor sphereColor = storedHits.Num() > 0 ? FColor::Red : FColor::Green;
+			DrawDebugSphere(GetWorld(), charPos, hitRadius, 12, FColor::Green, false, 1.0, 0, 1.0);
 		}
-	//}
-	//else {
-	//	UE_LOG(LogTemp, Warning, TEXT("attack cooldown"));
-
-	//}
-
-
-	
+	}
 }
 
 // this function is used to trigger an animation for the attacking control
+// it also sets the swinging particle effect and sound to play
 // it also sets a timer for reseting the attack cooldown with respect to the animation
 // cooldown for attacking has also been added to fix a melee bug
 void AdevelopmentCharacter::shouldAnimate(const FInputActionValue& Value) {
-	//if (tryUseStamina(meleeStaminaCost)) {
 	if (!isAttacking) {
 		if (attackMontage) {
 			isAttacking = true;
@@ -544,14 +555,13 @@ void AdevelopmentCharacter::shouldAnimate(const FInputActionValue& Value) {
 			float attackDelay;
 			attackDelay = montageTime / 5;
 
+			playSwingEffect();
+
 			GetWorldTimerManager().SetTimer(attackDelayHandle, this, &AdevelopmentCharacter::meleeAttack, attackDelay, false);
 
 			GetWorldTimerManager().SetTimer(meleeCooldownTimeHandle, this, &AdevelopmentCharacter::animationEnded, montageTime* 0.25f, false);
 		}
 	}
-		
-	//}
-	
 }
 
 // this function is a setter for reseting the melee cooldown
@@ -626,8 +636,91 @@ void AdevelopmentCharacter::Jump() {
 	}
 }
 
+// this is a function sets the isAttacking flag to false when the animation is ended
 void AdevelopmentCharacter::animationEnded() {
 	isAttacking = false;
+}
+
+// this function is used to control the melee swing effects like sound and particle animation
+// it sets a timer to give the swing audio a slight delay and play the sound, it then sets up a niagara particle effect
+// it spawns the particle affect attached to the weapon socket, it then uses a timer to decide the duration the effect should play before being destroyed
+void  AdevelopmentCharacter::playSwingEffect() {
+	GetWorldTimerManager().SetTimer(
+		meleeAudioTimerHandle,
+		this,
+		&AdevelopmentCharacter::playDelayedAudio,
+		meleeAudioDelay,
+		false
+	);
+	
+	if (meleeSwing) {
+
+		UNiagaraComponent* niagaraComp = UNiagaraFunctionLibrary::SpawnSystemAttached(
+			meleeSwing,
+			GetMesh(),
+			weaponSocket,
+			FVector::ZeroVector,
+			FRotator::ZeroRotator,
+			EAttachLocation::SnapToTarget,
+			true
+		);
+
+		if (niagaraComp) {
+			float duration = 0.5f;
+			FTimerHandle niagaraTimerHandle;
+			GetWorld()->GetTimerManager().SetTimer(niagaraTimerHandle, FTimerDelegate::CreateLambda([niagaraComp]() {
+				if (niagaraComp)
+				{
+					niagaraComp->DestroyComponent();
+				}
+				}), duration, false);
+		}
+	}
+}
+
+// this function is used to control the melee hit effects such as sound and particle effects when a hit is detected
+// if there is a hit sound present then play the melee sound at the hit location with a random pitch range
+// if there is a hit partcile present the spawn the particle at the hit location at double the scale of the original particle
+// if there is a playerControler and melee camera shake is present then start a camera shake
+void  AdevelopmentCharacter::playHitEffect(const FVector& hitLocation) {
+	if (meleeHitSound) {
+		float randomPitch = FMath::RandRange(minPitch, maxPitch);
+		UGameplayStatics::PlaySoundAtLocation(
+			this,
+			meleeHitSound,
+			hitLocation,
+			1.0f,
+			randomPitch
+		);
+	}
+
+	FVector particleScale(2.0f, 2.0f, 2.0f);
+	if (meleeHitParticle) {
+		UGameplayStatics::SpawnEmitterAtLocation(
+			GetWorld(),
+			meleeHitParticle,
+			hitLocation,
+			FRotator::ZeroRotator,
+			particleScale,
+			true
+		);
+	}
+
+	APlayerController* playerController = Cast<APlayerController>(GetController());
+	if (playerController && meleeCameraShake) {
+		playerController->ClientStartCameraShake(meleeCameraShake, 1.0f);
+	}
+}
+
+// this function is used to play the melee audio at a random pitch range 
+void AdevelopmentCharacter::playDelayedAudio() {
+	if (meleeSound && audioComp) {
+		float randomPitch = FMath::RandRange(minPitch, maxPitch);
+
+		audioComp->SetSound(meleeSound);
+		audioComp->SetPitchMultiplier(randomPitch);
+		audioComp->Play();
+	}
 }
 
 
