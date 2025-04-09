@@ -723,4 +723,7 @@ void AdevelopmentCharacter::playDelayedAudio() {
 	}
 }
 
-
+// this is a setter function for allowing melee
+void AdevelopmentCharacter::setCanMelee(bool shouldAllowMelee) {
+	canMelee = shouldAllowMelee;
+}

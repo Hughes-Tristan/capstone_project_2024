@@ -232,8 +232,12 @@ private:
 
 	FTimerHandle timerHandle;
 	float meleeTimer;
-	UPROPERTY(BlueprintReadWrite, EditAnywhere)
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, meta = (AllowPrivateAccess = "true"))
 	bool canMelee;
+
+	void setCanMelee(bool shouldAllowMelee);
+
 	void shouldMelee();
 
 	bool isAttacking;
