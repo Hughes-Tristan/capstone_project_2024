@@ -1,14 +1,32 @@
 
-// Main Character Class for controlling character movement and actions
-// Base Class is Unreal Engines Third Person Template Class
-// Developer(s): Tristan Hughes (designed from third person template class as a base for this code)
-// Last Updated: 11-26-24
+/*******************************************************************************************
+*
+*   Main Character v1.0.0 - Main Character Class for Controlling Character Movement and Actions
+*
+*   Last Modified: 4-5-25
+*
+*   MODULE USAGE:
+*	** Module usage section WIP **
+*
+*   DISCLAIMER: The "Module Usage" section of this header comment was generated with the assistance of generative AI.
+*
+*   LICENSE: Personal Use
+*
+*   Copyright © 2025 Tristan Hughes and 2025 UNR Capstone Team 10. All Rights Reserved.
+*   This software is based on Unreal Engine (© 1998-2025 Epic Games, Inc.), and is subject to the terms of Unreal Engine's End User License Agreement (EULA).
+*   Unauthorized use, reproduction, or distribution of this code, or parts of it, without proper authorization is prohibited.
+*
+*   Unreal Engine’s base code and components are used under the Unreal Engine License, which can be reviewed at:
+*   https://www.unrealengine.com/en-US/eula
+*
+*   Unauthorized copying of this file, via any medium is strictly prohibited
+*   This project is personal and confidential unless stated otherwise.
+*   Permission for use in any form must be granted in writing by Tristan Hughes and the 2025 UNR Capstone Team 10.
+*
+**********************************************************************************************/
 
 #include "developmentCharacterTH.h"
 
-
-// Template Base Code: Copyright Epic Games, Inc. All Rights Reserved.
-// Template base code used from third person character template used and expanded upon with compliance to Epic Games Unreal Engine EULA
 
 // all the necessary libraries
 #include "Engine/LocalPlayer.h"
@@ -82,7 +100,6 @@ AdevelopmentCharacter::AdevelopmentCharacter()
 // CODE WITHIN THE BLOCK BELOW IS WRITTEN BY Tristan Hughes
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	
-
 	// initial camera state settings
 	CameraBoom->SocketOffset = FVector(0.0f,55.0f,70.0f);
 	FRotator cameraRotation(0.0f, -10.0f, 0.0f);
@@ -95,8 +112,32 @@ AdevelopmentCharacter::AdevelopmentCharacter()
 
 	meleeTimer = 0.05;
 	canMelee = true;
+	
+	// stamina system default values
+	staminaCostEverySecond = 5.0f;
+	//meleeStaminaCost = 20.0f;
+	jumpStaminaCost = 8.0f;
 
+	staminaComponent = CreateDefaultSubobject<UStaminaComponent>(TEXT("Stamina Component"));
+	displayedStamina = 1.0f;
 	//widgetInstance = nullptr;
+	isAttacking = false;
+
+	audioComp = CreateDefaultSubobject<UAudioComponent>(TEXT("AudioComponent"));
+	audioComp->SetupAttachment(RootComponent);
+	audioComp->bAutoActivate = false;
+	minPitch = 0.6f;
+	maxPitch = 1.4f;
+	meleeAudioDelay = 0.2f;
+
+	particleComp = CreateDefaultSubobject<UParticleSystemComponent>(TEXT("ParticleSystemComponent"));
+	particleComp->SetupAttachment(RootComponent);
+	particleComp->bAutoActivate = false;
+
+	weaponSocket = FName("weapon_r");
+
+
+
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -107,18 +148,43 @@ void AdevelopmentCharacter::BeginPlay()
 {
 	// Call the base class  
 	Super::BeginPlay();
-	//widgetInstance = CreateWidget<UUserWidget>(GetWorld(), healthWidget);
-	//widgetInstance->AddToViewport();
+	
+	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// CODE WITHIN THE BLOCK BELOW IS WRITTEN BY Tristan Hughes
+	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	
+	// this block of code checks if a stamina bar class is valid
+	// it trys to get a player controller associated with the actor then if the controller is valid
+	// create the stamina bar widget and if the widget is valid add the widget to the viewport
+	// if the stamina component is valid set the displayed stamina variable to the current stamina percent
+	if (staminaBarClass)
+	{
+		APlayerController* playerController = Cast<APlayerController>(GetController());
+		if (playerController)
+		{
+			staminaBarWidget = CreateWidget<UStaminaBar>(playerController, staminaBarClass);
+			if (staminaBarWidget)
+			{
+				staminaBarWidget->AddToViewport();
+			}
+		}
+	}
 
+	if (staminaComponent) {
+		displayedStamina = staminaComponent->getStaminaAmount();
+	}
+	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// CODE WITHIN THE BLOCK BELOW IS WRITTEN BY Tristan Hughes
+	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 }
 
-
-// Input
-void AdevelopmentCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
-{
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // CODE WITHIN THE BLOCK BELOW IS WRITTEN BY Unreal Engine
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Input
+void AdevelopmentCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
+{
+
 	// Add Input Mapping Context
 	if (APlayerController* PlayerController = Cast<APlayerController>(GetController()))
 	{
@@ -240,6 +306,11 @@ void AdevelopmentCharacter::Look(const FInputActionValue& Value)
 // this function is called every frame and it updates the character
 // it also is being used to smoothly set our character arm length when the player transitions arm lengths
 // it is also checking if the player is dead, if the player is dead then it should disable the input
+// stamina system was added and general functionality for the stamina system have been included in this function
+// if the stamina bar widget, stamina component, and stamina bar is valid then continue
+// get current stamina percent, smoothly interpolate between the display and current stamina for smooth visual representation
+// update stamina bar then change stamina bar color based on the current stamina
+// then create a pulse affect that changes the opacity and scale when the stamina is less than 25 percent
 void AdevelopmentCharacter::Tick(float time) {
 	Super::Tick(time);
 	orientPlayerRotation();
@@ -249,6 +320,54 @@ void AdevelopmentCharacter::Tick(float time) {
 	if (isDead()) {
 		shouldDisableInput();
 	}
+	
+	if (staminaBarWidget && staminaComponent && staminaBarWidget->staminaBar) {
+
+		float currentSTamina = staminaComponent->getStaminaAmount();
+
+		displayedStamina = FMath::FInterpTo(
+			displayedStamina,
+			currentSTamina,
+			time,
+			staminaSmoothingSpeed
+		);
+		staminaBarWidget->staminaBar->SetPercent(displayedStamina);
+
+		FLinearColor barColor = FLinearColor::LerpUsingHSV(
+			FLinearColor(1.0f, 0.0f, 0.0f),
+			FLinearColor(0.0f, 1.0f, 0.0f),
+			displayedStamina
+		);
+
+		staminaBarWidget->staminaBar->SetFillColorAndOpacity(barColor);
+
+		if (displayedStamina < 0.25f) {
+			float pulseTime = GetWorld()->GetTimeSeconds() * 5.0f;
+			float pulseValue = (FMath::Sin(pulseTime) * 0.2f) + 0.8f;
+			staminaBarWidget->staminaBar->SetRenderOpacity(pulseValue);
+
+			float pulseScale = (FMath::Sin(pulseTime) * 0.02f) + 1.0f;
+			FVector2D updatedScale = defaultBarScale * pulseScale;
+
+			FWidgetTransform transform;
+			transform.Scale = FVector2d(pulseScale, pulseScale);
+			staminaBarWidget->staminaBar->SetRenderTransform(transform);
+		}
+		else {
+			staminaBarWidget->staminaBar->SetRenderOpacity(1.0f);
+			FWidgetTransform transform;
+			transform.Scale = defaultBarScale;
+			staminaBarWidget->staminaBar->SetRenderTransform(transform);
+		}
+	}
+
+	if (staminaComponent) {
+		UE_LOG(LogTemp, Display, TEXT("Stamina: %f / %f (%.1f%%)"),
+			staminaComponent->getStamina(),
+			staminaComponent->getMaxStamina(),
+			staminaComponent->getStaminaAmount() * 100.0f);
+	}
+		
 }
 
 // this function updates the player rotation based on his velocity
@@ -309,18 +428,32 @@ void AdevelopmentCharacter::setAnimationState(const FInputActionValue& Value) {
 // this function is used to initiate the action of sprinting
 // if the player is crouching then they cant sprint
 void AdevelopmentCharacter::startSprinting(const FInputActionValue& Value) {
-	if (isCrouching == false) {
+	if (isCrouching == false && tryUseStamina(staminaCostEverySecond * 0.5f)) {
 		isSprinting = true;
 		GetCharacterMovement()->MaxWalkSpeed = 750.f;
 		moveSpeed = 750.f;
+
+		GetWorldTimerManager().SetTimer(sprintStaminaTH, this, &AdevelopmentCharacter::sprintStamina, 0.1f, true);
+
+		if (staminaComponent) {
+			staminaComponent->setStaminaGain(false);
+		}
 	}
 }
 
 // this function is used to stop the aciton of sprinting and return to walking
 void AdevelopmentCharacter::stopSprinting(const FInputActionValue& Value) {
-	isSprinting = false;
-	GetCharacterMovement()->MaxWalkSpeed = 350.f;
-	moveSpeed = 350.f;
+	if (isSprinting) {
+		isSprinting = false;
+		GetCharacterMovement()->MaxWalkSpeed = 350.f;
+		moveSpeed = 350.f;
+
+		GetWorldTimerManager().ClearTimer(sprintStaminaTH);
+
+		if (staminaComponent) {
+			staminaComponent->setStaminaGain(true);
+		}
+	}
 }
 
 //this function is used to control how smoothly the camera transitions from one length to another
@@ -367,7 +500,8 @@ void AdevelopmentCharacter::doDamage(AActor* target) {
 
 //this function is designed to perform a melee atack
 // it perofrms a check for whether actors are ofverlapping within a radius
-// if there is an enemy in the radius  then damage gets applied to all the actors in the radius
+// if there is an enemy in the radius then damage gets applied to all the actors in the radius
+// and a hit effect occurs at the hit location
 // after a hit is complete it initials a cooldown timer
 void AdevelopmentCharacter::meleeAttack() {
 	TArray<FOverlapResult> storedHits;
@@ -379,49 +513,54 @@ void AdevelopmentCharacter::meleeAttack() {
 	hitRadius = meleeDamageRange;
 	charPos = GetActorLocation();
 	queryParams.AddIgnoredActor(this);
-	if (canMelee) {
 
 
-		GetWorld()->OverlapMultiByChannel(storedHits, charPos, FQuat::Identity, ECC_Pawn, FCollisionShape::MakeSphere(hitRadius), queryParams);
+	GetWorld()->OverlapMultiByChannel(storedHits, charPos, FQuat::Identity, ECC_Pawn, FCollisionShape::MakeSphere(hitRadius), queryParams);
 
-		for (int32 i = storedHits.Num() - 1; i >= 0; --i) {
-			const FOverlapResult& overlapResult = storedHits[i];
-			AActor* enemy = overlapResult.GetActor();
-			if (enemy && enemy != this) {
-				//doDamage(enemy);
+	bool hitEnemy = false;
+	FVector hitLocation = charPos;
+
+	for (int32 i = storedHits.Num() - 1; i >= 0; --i) {
+		const FOverlapResult& overlapResult = storedHits[i];
+		AActor* enemy = overlapResult.GetActor();
+		if (enemy && enemy != this) {
 		
-				if (!actorOverlap.Contains(enemy)) {
+			if (!actorOverlap.Contains(enemy)) {
 					
-					actorOverlap.Add(enemy);
-					doDamage(enemy);
-				}
-				canMelee = false;
-				GetWorldTimerManager().SetTimer(timerHandle, this, &AdevelopmentCharacter::shouldMelee, meleeTimer, false);
+				actorOverlap.Add(enemy);
+				doDamage(enemy);
 
+				hitEnemy = true;
+				hitLocation = enemy->GetActorLocation();
+				playHitEffect(hitLocation);
 			}
+
+			FColor sphereColor = storedHits.Num() > 0 ? FColor::Red : FColor::Green;
+			DrawDebugSphere(GetWorld(), charPos, hitRadius, 12, FColor::Green, false, 1.0, 0, 1.0);
 		}
 	}
-	else {
-		UE_LOG(LogTemp, Warning, TEXT("attack cooldown"));
-
-	}
-	FColor sphereColor = storedHits.Num() > 0 ? FColor::Red : FColor::Green;
-	//DrawDebugSphere(GetWorld(), charPos, hitRadius, 12, FColor::Green, false, 1.0, 0, 1.0);
-
-	
 }
 
 // this function is used to trigger an animation for the attacking control
+// it also sets the swinging particle effect and sound to play
 // it also sets a timer for reseting the attack cooldown with respect to the animation
+// cooldown for attacking has also been added to fix a melee bug
 void AdevelopmentCharacter::shouldAnimate(const FInputActionValue& Value) {
-	if (attackMontage) {
-		float montageTime;
-		montageTime = PlayAnimMontage(attackMontage, 2.0f);
+	if (!isAttacking) {
+		if (attackMontage) {
+			isAttacking = true;
+			float montageTime;
+			montageTime = PlayAnimMontage(attackMontage, 2.0f);
 
-		float attackDelay;
-		attackDelay = montageTime /5;
+			float attackDelay;
+			attackDelay = montageTime / 5;
 
-		GetWorldTimerManager().SetTimer(attackDelayHandle, this, &AdevelopmentCharacter::meleeAttack, attackDelay, false);
+			playSwingEffect();
+
+			GetWorldTimerManager().SetTimer(attackDelayHandle, this, &AdevelopmentCharacter::meleeAttack, attackDelay, false);
+
+			GetWorldTimerManager().SetTimer(meleeCooldownTimeHandle, this, &AdevelopmentCharacter::animationEnded, montageTime* 0.25f, false);
+		}
 	}
 }
 
@@ -445,4 +584,143 @@ void AdevelopmentCharacter::shouldDisableInput() {
 		playerController->DisableInput(playerController);
 	}
 }
+
+// this is a getter function that gets the current stamina as a percent
+float AdevelopmentCharacter::getStaminaAmount() const {
+	if (staminaComponent) {
+		return staminaComponent->getStaminaAmount();
+	}
+	return 0.0f;
+}
+
+//this function  is used to check if the character has enough stamina to perform an action given the required stamina needed
+bool AdevelopmentCharacter::isStaminaAvailable(float staminaNeeded) const {
+	if (staminaComponent) {
+		return staminaComponent->isStaminaAvailable(staminaNeeded);
+	}
+	return false;
+}
+
+// this function is used to attempt to use a given stamina amount
+// if there is enough stamina then take the stamina amount, otherwise return false
+bool AdevelopmentCharacter::tryUseStamina(float staminaNeeded) {
+	if (staminaComponent && staminaComponent->isStaminaAvailable(staminaNeeded)) {
+		staminaComponent->takeStamina(staminaNeeded);
+		return true;
+	}
+	return false;
+}
+
+// this functions is used to handle stamina usage
+// if there is a stamina component and the character is sprinting then take the the stamina from the available stamina
+// otherwise force sprinting to stop if there is no stamina
+void AdevelopmentCharacter::sprintStamina() {
+	if (staminaComponent && isSprinting) {
+		float staminaCost = staminaCostEverySecond * 0.1f;
+		if (staminaComponent->isStaminaAvailable(staminaCost)) {
+			staminaComponent->takeStamina(staminaCost);
+		}
+		else {
+			stopSprinting(FInputActionValue());
+		}
+	}
+}
+
+// this is a override funtion for the jump function and only calls the base jump functions if there is enough stamina to jump
+void AdevelopmentCharacter::Jump() {
+	if (tryUseStamina(jumpStaminaCost)) {
+		Super::Jump();
+	}
+	else {
+		UE_LOG(LogTemp, Warning, TEXT("not enough stamina to jump"));
+	}
+}
+
+// this is a function sets the isAttacking flag to false when the animation is ended
+void AdevelopmentCharacter::animationEnded() {
+	isAttacking = false;
+}
+
+// this function is used to control the melee swing effects like sound and particle animation
+// it sets a timer to give the swing audio a slight delay and play the sound, it then sets up a niagara particle effect
+// it spawns the particle affect attached to the weapon socket, it then uses a timer to decide the duration the effect should play before being destroyed
+void  AdevelopmentCharacter::playSwingEffect() {
+	GetWorldTimerManager().SetTimer(
+		meleeAudioTimerHandle,
+		this,
+		&AdevelopmentCharacter::playDelayedAudio,
+		meleeAudioDelay,
+		false
+	);
+	
+	if (meleeSwing) {
+
+		UNiagaraComponent* niagaraComp = UNiagaraFunctionLibrary::SpawnSystemAttached(
+			meleeSwing,
+			GetMesh(),
+			weaponSocket,
+			FVector::ZeroVector,
+			FRotator::ZeroRotator,
+			EAttachLocation::SnapToTarget,
+			true
+		);
+
+		if (niagaraComp) {
+			float duration = 0.5f;
+			FTimerHandle niagaraTimerHandle;
+			GetWorld()->GetTimerManager().SetTimer(niagaraTimerHandle, FTimerDelegate::CreateLambda([niagaraComp]() {
+				if (niagaraComp)
+				{
+					niagaraComp->DestroyComponent();
+				}
+				}), duration, false);
+		}
+	}
+}
+
+// this function is used to control the melee hit effects such as sound and particle effects when a hit is detected
+// if there is a hit sound present then play the melee sound at the hit location with a random pitch range
+// if there is a hit partcile present the spawn the particle at the hit location at double the scale of the original particle
+// if there is a playerControler and melee camera shake is present then start a camera shake
+void  AdevelopmentCharacter::playHitEffect(const FVector& hitLocation) {
+	if (meleeHitSound) {
+		float randomPitch = FMath::RandRange(minPitch, maxPitch);
+		UGameplayStatics::PlaySoundAtLocation(
+			this,
+			meleeHitSound,
+			hitLocation,
+			1.0f,
+			randomPitch
+		);
+	}
+
+	FVector particleScale(2.0f, 2.0f, 2.0f);
+	if (meleeHitParticle) {
+		UGameplayStatics::SpawnEmitterAtLocation(
+			GetWorld(),
+			meleeHitParticle,
+			hitLocation,
+			FRotator::ZeroRotator,
+			particleScale,
+			true
+		);
+	}
+
+	APlayerController* playerController = Cast<APlayerController>(GetController());
+	if (playerController && meleeCameraShake) {
+		playerController->ClientStartCameraShake(meleeCameraShake, 1.0f);
+	}
+}
+
+// this function is used to play the melee audio at a random pitch range 
+void AdevelopmentCharacter::playDelayedAudio() {
+	if (meleeSound && audioComp) {
+		float randomPitch = FMath::RandRange(minPitch, maxPitch);
+
+		audioComp->SetSound(meleeSound);
+		audioComp->SetPitchMultiplier(randomPitch);
+		audioComp->Play();
+	}
+}
+
 

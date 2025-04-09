@@ -1,12 +1,25 @@
 
-// Damage Component Class for modular damage system
-// Developer(s): Tristan Hughes 
-// Last Updated: 12-10-24
+/*******************************************************************************************
+*
+*   Damage Component v1.0.0 - Damage Component Class for Modular Damage System
+*
+*   Last Modified: 12-10-24
+*
+*   MODULE USAGE:
+*	** Module usage section WIP **
+*
+*   DISCLAIMER: The "Module Usage" section of this header comment was generated with the assistance of generative AI.
+*
+*   LICENSE: Personal Use
+*
+*   Copyright © 2025 Tristan Hughes and 2025 UNR Capstone Team 10. All Rights Reserved.
+*
+*   Unauthorized copying of this file, via any medium is strictly prohibited
+*   This project is personal and confidential unless stated otherwise.
+*   Permission for use in any form must be granted in writing by Tristan Hughes and the 2025 UNR Capstone Team 10.
+*
+**********************************************************************************************/
 
-/*
-Look into copyright notice ? this comment was included when creating the class: Fill out your copyright
-notice in the Description page of Project Settings.
-*/
 #pragma once
 
 #include "CoreMinimal.h"
