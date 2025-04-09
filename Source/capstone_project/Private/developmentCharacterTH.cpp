@@ -498,7 +498,7 @@ void AdevelopmentCharacter::doDamage(AActor* target) {
 }
 
 
-//this function is designed to perform a melee atack
+// this function is designed to perform a melee atack
 // it perofrms a check for whether actors are ofverlapping within a radius
 // if there is an enemy in the radius then damage gets applied to all the actors in the radius
 // and a hit effect occurs at the hit location
@@ -525,8 +525,8 @@ void AdevelopmentCharacter::meleeAttack() {
 		AActor* enemy = overlapResult.GetActor();
 		if (enemy && enemy != this) {
 		
-			if (!actorOverlap.Contains(enemy)) {
-					
+			if (!actorOverlap.Contains(enemy) && canMelee) {
+				
 				actorOverlap.Add(enemy);
 				doDamage(enemy);
 
@@ -547,7 +547,7 @@ void AdevelopmentCharacter::meleeAttack() {
 // cooldown for attacking has also been added to fix a melee bug
 void AdevelopmentCharacter::shouldAnimate(const FInputActionValue& Value) {
 	if (!isAttacking) {
-		if (attackMontage) {
+		if (attackMontage && canMelee) {
 			isAttacking = true;
 			float montageTime;
 			montageTime = PlayAnimMontage(attackMontage, 2.0f);
@@ -640,6 +640,7 @@ void AdevelopmentCharacter::Jump() {
 void AdevelopmentCharacter::animationEnded() {
 	isAttacking = false;
 }
+
 
 // this function is used to control the melee swing effects like sound and particle animation
 // it sets a timer to give the swing audio a slight delay and play the sound, it then sets up a niagara particle effect
