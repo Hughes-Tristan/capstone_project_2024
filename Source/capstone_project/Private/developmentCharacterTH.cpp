@@ -111,7 +111,7 @@ AdevelopmentCharacter::AdevelopmentCharacter()
 	damageComponent = CreateDefaultSubobject<UdamageComponent>(TEXT("damage component initialization"));
 
 	meleeTimer = 0.05;
-	canMelee = true;
+	canMelee = false;
 	
 	// stamina system default values
 	staminaCostEverySecond = 5.0f;
@@ -135,9 +135,6 @@ AdevelopmentCharacter::AdevelopmentCharacter()
 	particleComp->bAutoActivate = false;
 
 	weaponSocket = FName("weapon_r");
-
-
-
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -492,7 +489,6 @@ void AdevelopmentCharacter::doDamage(AActor* target) {
 
 		if (enemyPresent) {
 			enemyPresent->takeDamage(damageInfo);
-	
 		}
 	}
 }

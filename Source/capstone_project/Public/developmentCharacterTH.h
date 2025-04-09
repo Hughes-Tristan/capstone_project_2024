@@ -326,7 +326,6 @@ private:
 	// camerashake
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<UCameraShakeBase> meleeCameraShake;
-
 };
 
 
