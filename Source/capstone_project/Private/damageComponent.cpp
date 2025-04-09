@@ -1,12 +1,24 @@
 
-// Damage Component Class for Modular Damage System
-// Developer(s): Tristan Hughes 
-// Last Updated: 12-10-24
-
-/*
-Look into copyright notice ? this comment was included when creating the class: Fill out your copyright
-notice in the Description page of Project Settings.
-*/
+/*******************************************************************************************
+*
+*   Damage Component v1.0.0 - Damage Component Class for Modular Damage System
+*
+*   Last Modified: 12-10-24
+*
+*   MODULE USAGE:
+*	** Module usage section WIP **
+*
+*   DISCLAIMER: The "Module Usage" section of this header comment was generated with the assistance of generative AI.
+*
+*   LICENSE: Personal Use
+*
+*   Copyright (c) 2025 Tristan Hughes and 2025 UNR Capstone Team 10. All Rights Reserved.
+*
+*   Unauthorized copying of this file, via any medium is strictly prohibited
+*   This project is personal and confidential unless stated otherwise.
+*   Permission for use in any form must be granted in writing by Tristan Hughes and the 2025 UNR Capstone Team 10.
+*
+**********************************************************************************************/
 
 #include "damageComponent.h"
 #include "GameFramework/Character.h"
@@ -14,18 +26,18 @@ notice in the Description page of Project Settings.
 #include "enemycharacter1.h"
 #include "GameFramework/CharacterMovementComponent.h"
 
-// Sets default values for this component's properties
+// this is the constructor for setting default values to an object of this clas
+// sets the ticked every frame component, default health value, and death boolean value.
 UdamageComponent::UdamageComponent() {
-	// Set this component to be initialized when the game starts, and to be ticked every frame.  You can turn these features
-	// off to improve performance if you don't need them.
-	PrimaryComponentTick.bCanEverTick = true;
-	// Default Health Value
+	
+	// if you want to use the tick component function set this to true, false should help performance
+	PrimaryComponentTick.bCanEverTick = false;
 	health = 100.0;
 	isDead = false;
 }
 
 
-// Called when the game starts
+// this function is called when the game starts
 void UdamageComponent::BeginPlay() {
 	Super::BeginPlay();
 }
@@ -156,11 +168,11 @@ void UdamageComponent::death() {
 	//characterCast->GetMesh()->WakeAllRigidBodies();
 }
 
-/*// Called every frame
-void UdamageComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
-{
-	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
+// this is called every frame, should be set to true in the constructor
+//void UdamageComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
+//{
+	//Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
 	// ...
-}*/
+//}
 

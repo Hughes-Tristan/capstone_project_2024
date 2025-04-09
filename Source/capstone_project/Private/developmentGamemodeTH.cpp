@@ -1,8 +1,4 @@
 
-// Main Gamemode Class for main character
-// Developer(s): Tristan Hughes 
-// Last Updated: 11-26-24
-
 #include "developmentGamemodeTH.h"
 #include "developmentCharacterTH.h"
 #include "UObject/ConstructorHelpers.h"

@@ -1,7 +1,24 @@
 
-// Enemy character class for enemy behavior
-// Developer(s): Tristan Hughes, Joey Bertrand
-// Last Updated: 12-10-24
+/*******************************************************************************************
+*
+*   Enemy Character v1.0.0 - Enemy Character Class for Enemy Behavior
+*
+*   Last Modified: 12-10-24
+*
+*   MODULE USAGE:
+*	** Module usage section WIP **
+*
+*   DISCLAIMER: The "Module Usage" section of this header comment was generated with the assistance of generative AI.
+*
+*   LICENSE: Personal Use
+*
+*   Copyright © 2025 UNR Capstone Team 10. All Rights Reserved.
+*
+*   Unauthorized copying of this file, via any medium is strictly prohibited
+*   This project is personal and confidential unless stated otherwise.
+*   Permission for use in any form must be granted in writing by the 2025 UNR Capstone Team 10.
+*
+**********************************************************************************************/
 
 // necessary header files for enemy character functions
 #include "enemycharacter1.h"
@@ -192,7 +209,6 @@ bool Aenemycharacter1::InTargetRange(AActor* Target, double Radius)
     
 }
 
-//code by tristan hughes
 // this function was created as part of the wavemanager system
 // it is designed in a way that if the actor we are targeting casts successfully and if the waveManager object is initialized correctly
 // then tell the wave manager that the actor died
