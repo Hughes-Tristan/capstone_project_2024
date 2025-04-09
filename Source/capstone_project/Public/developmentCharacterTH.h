@@ -213,6 +213,9 @@ public:
 
 	float meleeCooldown;
 
+	UFUNCTION(BlueprintCallable, Category = "MeleeFlag")
+	void setCanMelee(bool shouldAllowMelee);
+
 private:
 	// private variables associated with character actions
 	UPROPERTY(BlueprintReadWrite, Category = "Movement", meta = (AllowPrivateAccess = "true"))
@@ -235,8 +238,6 @@ private:
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, meta = (AllowPrivateAccess = "true"))
 	bool canMelee;
-
-	void setCanMelee(bool shouldAllowMelee);
 
 	void shouldMelee();
 
