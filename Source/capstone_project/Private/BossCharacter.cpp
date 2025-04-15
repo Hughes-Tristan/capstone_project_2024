@@ -20,6 +20,9 @@ ABossCharacter::ABossCharacter()
 void ABossCharacter::BeginPlay()
 {
 	Super::BeginPlay();
+    
+    damageComponent->setMaxHealth(1000.0f);
+    damageComponent->setHealth(1000.0f);
 	
 }
 
@@ -53,7 +56,7 @@ void ABossCharacter::applyHealth(float healthAmount)
     }
 }
 
-float ABossCharacter::getHealth() const
+/*float ABossCharacter::getHealth() const
 {
     return damageComponent ? damageComponent->getHealth() : 0.f;
 }
@@ -62,4 +65,4 @@ float ABossCharacter::getMaxHealth() const
 {
     return damageComponent ? damageComponent->getMaxHealth() : 1000.f;
 }
-
+*/

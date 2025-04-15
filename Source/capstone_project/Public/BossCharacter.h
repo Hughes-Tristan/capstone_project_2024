@@ -9,7 +9,7 @@
 #include "GameFramework/Character.h"
 #include "BossCharacter.generated.h"
 
-UCLASS()
+UCLASS(Blueprintable)
 class CAPSTONE_PROJECT_API ABossCharacter : public ACharacter
 {
 	GENERATED_BODY()
@@ -28,8 +28,8 @@ public:
     //Damage System Boss Character interface
     virtual void applyHealth(float healthAmount);
     virtual void applyDamage(const UdamageInfo* damageInfo);
-    virtual float getHealth() const;
-    virtual float getMaxHealth() const;
+    //virtual float getHealth() const;
+    //virtual float getMaxHealth() const;
     
     
 
