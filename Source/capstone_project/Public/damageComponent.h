@@ -62,6 +62,12 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Damage")
 	void applyDirectDamage(float damageAmount);
 
+	UFUNCTION(BlueprintCallable, Category = "Damage")
+	void setHealth(float newHealth);
+
+	UFUNCTION(BlueprintCallable, Category = "Damage")
+	void setMaxHealth(float newMaxHealth);
+
 	bool isDead;
 
 protected:
@@ -71,7 +77,9 @@ protected:
 private:
 
 	float health;
-	const float maxHealth = 100;
+
+	UPROPERTY(EditAnywhere, Category = "Damage")
+	float maxHealth;
 	//bool isDead;
 	// Called every frame
 	//virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;

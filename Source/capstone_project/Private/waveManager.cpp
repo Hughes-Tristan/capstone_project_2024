@@ -21,6 +21,7 @@
 **********************************************************************************************/
 
 #include "waveManager.h"
+#include "GameFramework/CharacterMovementComponent.h"
 #include "Engine/World.h"
 
 // constructor to store initial values 
@@ -68,6 +69,8 @@ void AwaveManager::startWave() {
 // then choose a random spawnpoint, get location and rotation, then set you spawn parameters
 // then spawn an enemy
 // if it spawns successfully then add to the list of enemies spawned, increase enemy tally and link the wavemanager
+// then find the valid ai controller class from the blueprint defaults
+// if we find a valid controller then spawn it
 void AwaveManager::spawnBP() {
 	if (total <= enemyCount) {
 		GetWorldTimerManager().ClearTimer(timerHandle);
@@ -80,14 +83,47 @@ void AwaveManager::spawnBP() {
 	FRotator spawnRotation = spawnPoint->GetActorRotation();
 	FVector spawnLocation = spawnPoint->GetActorLocation();
 	FActorSpawnParameters spawnParameters;
-    Aenemycharacter1* enemySpawned = GetWorld()->SpawnActor<Aenemycharacter1>(blueprint, spawnLocation, spawnRotation, spawnParameters);
+    ASmarterEnemy* enemySpawned = GetWorld()->SpawnActor<ASmarterEnemy>(blueprint, spawnLocation, spawnRotation, spawnParameters);
 
-	if (enemySpawned) {
-		
-		enemies.Add(enemySpawned);
-		enemyCount++;
-		enemySpawned->waveManager = this;
-	}
+    if (enemySpawned) {
+        enemies.Add(enemySpawned);
+        enemyCount++;
+        enemySpawned->waveManager = this;
+
+        UCharacterMovementComponent* movementComp = enemySpawned->GetCharacterMovement();
+        if (movementComp) {
+            movementComp->GravityScale = 1.0f;
+            //movementComp->SetMovementMode(MOVE_Walking);
+        }
+
+		// the next 10 lines gets the ai controller class from the blueprint defined in the blueprints defaults
+		// these lines were written with the assistance of generative AI
+        UClass* blueprintClass = enemySpawned->GetClass();
+        UClass* aiControllerClass = nullptr;
+
+        for (TFieldIterator<FObjectProperty> PropIt(blueprintClass); PropIt; ++PropIt) {
+            FObjectProperty* Property = *PropIt;
+            if (Property->GetName() == "AIControllerClass") {
+                aiControllerClass = Cast<UClass>(Property->GetObjectPropertyValue_InContainer(blueprintClass->GetDefaultObject()));
+                break;
+            }
+        }
+
+        if (aiControllerClass) {
+            AAIController* aiController = GetWorld()->SpawnActor<AAIController>(aiControllerClass);
+            if (aiController) {
+                if (enemySpawned->GetController()) {
+                    enemySpawned->GetController()->UnPossess();
+					UE_LOG(LogTemp, Warning, TEXT("unpossesed"));
+                }
+                aiController->Possess(enemySpawned);
+				UE_LOG(LogTemp, Warning, TEXT("successfully possesed"));
+            }
+        }
+        else {
+            UE_LOG(LogTemp, Error, TEXT("Could not find AI controller class for enemy %s"), *enemySpawned->GetName());
+        }
+    }
 }
 
 

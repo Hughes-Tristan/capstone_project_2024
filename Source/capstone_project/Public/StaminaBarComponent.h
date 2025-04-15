@@ -42,8 +42,8 @@ public:
 	// public setter method
 	void setStaminaAmount(float percent);
 
-private:
-	// private reference to the stamina bar widget
+protected:
+	// protected reference to the stamina bar widget
 	UPROPERTY()
 	class UStaminaBar* staminaBarWidget;
 	

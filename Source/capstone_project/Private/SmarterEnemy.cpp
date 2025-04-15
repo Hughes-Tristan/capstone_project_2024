@@ -1,5 +1,24 @@
-// Fill out your copyright notice in the Description page of Project Settings.
 
+/*******************************************************************************************
+*
+*   Smarter Enemy v1.0.0 - Smarter Enemy Class for Enemy Behavior
+*
+*   Last Modified: 4-15-25
+*
+*   MODULE USAGE:
+*	** Module usage section WIP **
+*
+*   DISCLAIMER: The "Module Usage" section of this header comment was generated with the assistance of generative AI.
+*
+*   LICENSE: Personal Use
+*
+*   Copyright © 2025 UNR Capstone Team 10. All Rights Reserved.
+*
+*   Unauthorized copying of this file, via any medium is strictly prohibited
+*   This project is personal and confidential unless stated otherwise.
+*   Permission for use in any form must be granted in writing by the 2025 UNR Capstone Team 10.
+*
+**********************************************************************************************/
 
 #include "SmarterEnemy.h"
 #include "developmentCharacterTH.h"
@@ -43,6 +62,11 @@ ASmarterEnemy::ASmarterEnemy()
 
     spawnPercent = .04;
 
+    audioComponent = CreateDefaultSubobject<UAudioComponent>(TEXT("AudioComponent"));
+    audioComponent->SetupAttachment(RootComponent);
+    audioComponent->bAutoActivate = false;
+    minPitch = 0.6f;
+    maxPitch = 1.4f;
 
 }
 
@@ -64,7 +88,10 @@ void ASmarterEnemy::BeginPlay()
 void ASmarterEnemy::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-
+    UE_LOG(LogTemp, Warning, TEXT("enemy: %s, controller: %s, ai controller: %s"),
+        *GetName(),
+        GetController() ? *GetController()->GetName() : TEXT("none"),
+        Cast<AAIController>(GetController()) ? TEXT("valid") : TEXT("invalid"));
 }
 
 // Called to bind functionality to input
@@ -74,6 +101,9 @@ void ASmarterEnemy::SetupPlayerInputComponent(UInputComponent* PlayerInputCompon
 
 }
 
+// this function is designed to handle the functionality for the enemy taking damage
+// if the function receives damage info then apply damage using the modular damage system
+// it also stores the attacking actor
 void ASmarterEnemy::takeDamage(const UdamageInfo* damageInfo) {
     if (damageInfo) {
         if (damageComponent) {
@@ -87,20 +117,28 @@ void ASmarterEnemy::takeDamage(const UdamageInfo* damageInfo) {
     }
 }
 
+// this function is an event function provided by the Character class and is triggered when an actor enters the range
+// it checks if the actor is valid, in range, and can attack
+// then check if the main character exists then set the current taget to the main character
 void ASmarterEnemy::OnAttackRangeOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult) {
     AdevelopmentCharacter* mainCharacter;
-    if (OtherActor && OtherActor != this && canAttack) {
+    if (OtherActor && OtherActor != this) {
 
         mainCharacter = Cast<AdevelopmentCharacter>(OtherActor);
         if (mainCharacter)
         {
             
-            doDamage(mainCharacter);
-            canAttack = false;
-            GetWorld()->GetTimerManager().SetTimer(timerHandle, this, &ASmarterEnemy::shouldAttack, cooldownTime, false);
+            //doDamage(mainCharacter);
+            //canAttack = false;
+            //GetWorld()->GetTimerManager().SetTimer(timerHandle, this, &ASmarterEnemy::shouldAttack, cooldownTime, false);
+            currentTarget = mainCharacter;
         }
     }
 }
+
+// this function is designed to do damage to an actor
+// if an actor is detected than setup damage info for the attack
+// if the cast to the development character is successful it will do damage to the main player
 void ASmarterEnemy::doDamage(AActor* target) {
     if (target) {
         UdamageInfo* damageInfo = NewObject<UdamageInfo>();
@@ -113,12 +151,16 @@ void ASmarterEnemy::doDamage(AActor* target) {
         AdevelopmentCharacter* mainPlayer = Cast<AdevelopmentCharacter>(target);
         if (mainPlayer) {
             mainPlayer->takeDamage(damageInfo);
-
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
         }
     }
 }
 
+// this function was created as part of the wavemanager system
+// it is designed in a way that if the actor we are targeting casts successfully and if the waveManager object is initialized correctly
+// then tell the wave manager that the actor died
+// destroy after 10 seconds
+// if there is a blueprint to spawn then determine the objects spawning based in its percent
+// then configure parametors for the actor and spawn the actor
 void ASmarterEnemy::destroy() {
     AdevelopmentCharacter* player = Cast<AdevelopmentCharacter>(lastAttacker);
     if (player && waveManager) {
@@ -139,10 +181,59 @@ void ASmarterEnemy::destroy() {
     
 }
 
-
-// used as a flag to reset the attack cooldown
+// this function is a method to reset the canAttack flag
 void ASmarterEnemy::shouldAttack() {
     canAttack = true;
+}
+
+
+// this function is called in blueprint when an animation notifier is triggered
+// when triggeed it will check if there is a currentTarget and if the canAttack flag is true
+// if it is true then it will do damgage to the target, it will player the attack hit sound, and it will cause the players camera to shake
+// it then resets the canAttack flag on a timer
+void ASmarterEnemy::onAttackHit() {
+    UE_LOG(LogTemp, Warning, TEXT("OnAttackHit called on %s!"), *GetName());
+    if (currentTarget && canAttack)
+    {
+        doDamage(currentTarget);
+        if (attackHitSound)
+        {
+            UGameplayStatics::PlaySoundAtLocation(
+                this,
+                attackHitSound,
+                currentTarget->GetActorLocation(),
+                1.0f,
+                FMath::RandRange(minPitch, maxPitch)
+            );
+        }
+        if (attackCameraShake)
+        {
+            AdevelopmentCharacter* playerChararacter = Cast<AdevelopmentCharacter>(currentTarget);
+            if (playerChararacter)
+            {
+                APlayerController* playerController = Cast<APlayerController>(playerChararacter->GetController());
+                if (playerController)
+                {
+                    playerController->ClientStartCameraShake(attackCameraShake, 1.0f);
+                }
+            }
+        }
+        canAttack = false;
+        GetWorld()->GetTimerManager().SetTimer(timerHandle, this, &ASmarterEnemy::shouldAttack, cooldownTime, false);
+    }
+
+}
+
+// this function is used to trigger the attack sounds with a variable pitch range
+void ASmarterEnemy::onAttackSound(){
+    if (attackSound && audioComponent)
+    {
+        float randomPitch = FMath::RandRange(minPitch, maxPitch);
+
+        audioComponent->SetSound(attackSound);
+        audioComponent->SetPitchMultiplier(randomPitch);
+        audioComponent->Play();
+    }
 }
 
 
