@@ -24,7 +24,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
-#include "enemycharacter1.h"
+#include "SmarterEnemy.h"
 #include "waveManager.generated.h"
 
 // this class is designed for managing the wave system
@@ -69,7 +69,7 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Wave Settings")
 	TArray<AActor*> spawnPoints;
 	UPROPERTY(EditAnywhere, Category = "Wave Settings")
-	TSubclassOf<Aenemycharacter1> blueprint;
+	TSubclassOf<ASmarterEnemy> blueprint;
 
 	UPROPERTY(EditAnywhere, Category = "Wave Settings")
 	float timeToSpawn;

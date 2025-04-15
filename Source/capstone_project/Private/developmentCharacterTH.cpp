@@ -40,6 +40,7 @@
 #include "InputActionValue.h"
 #include "damageInfo.h"
 #include "enemycharacter1.h"
+#include "SmarterEnemy.h"
 #include "enemyPatrolCharacter.h"
 #include "CollisionQueryParams.h"
 #include "CollisionShape.h"
@@ -489,6 +490,11 @@ void AdevelopmentCharacter::doDamage(AActor* target) {
 
 		if (enemyPresent) {
 			enemyPresent->takeDamage(damageInfo);
+		}
+
+		ASmarterEnemy* smarterEnemy = Cast<ASmarterEnemy>(target);
+		if (smarterEnemy) {
+			smarterEnemy->takeDamage(damageInfo);
 		}
 	}
 }

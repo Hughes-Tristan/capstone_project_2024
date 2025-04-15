@@ -33,6 +33,7 @@ UdamageComponent::UdamageComponent() {
 	// if you want to use the tick component function set this to true, false should help performance
 	PrimaryComponentTick.bCanEverTick = false;
 	health = 100.0;
+	maxHealth = 100.0;
 	isDead = false;
 }
 
@@ -168,6 +169,31 @@ void UdamageComponent::death() {
 	//characterCast->GetMesh()->WakeAllRigidBodies();
 }
 
+// this is a setter function for setting a new health value
+// clamps the new health between 0 and the max health
+// also sets the dead flag
+void UdamageComponent::setHealth(float newHealth) {
+	health = FMath::Clamp(newHealth, 0.0f, maxHealth);
+	if (health <= 0) {
+		health = 0;
+		isDead = true;
+	} else {
+		isDead = false;
+	}
+}
+
+// this is a setter function for setting a new max health
+// it sets only if the value is above 0 and if the health is greater than the max health then set the max health to the health
+void UdamageComponent::setMaxHealth(float newMaxHealth) {
+	if (newMaxHealth > 0.0f) {
+		maxHealth = newMaxHealth;
+		if (health > maxHealth) {
+			health = maxHealth;
+		}
+	}
+
+}
+
 // this is called every frame, should be set to true in the constructor
 //void UdamageComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 //{
@@ -175,4 +201,5 @@ void UdamageComponent::death() {
 
 	// ...
 //}
+
 
