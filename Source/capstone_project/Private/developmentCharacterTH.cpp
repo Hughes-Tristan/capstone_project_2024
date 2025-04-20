@@ -136,6 +136,16 @@ AdevelopmentCharacter::AdevelopmentCharacter()
 	particleComp->bAutoActivate = false;
 
 	weaponSocket = FName("weapon_r");
+
+	// camera boom improvements
+	CameraBoom->bDoCollisionTest = true;
+	CameraBoom->ProbeChannel = ECC_Camera;
+	CameraBoom->ProbeSize = 12.0f;
+	CameraBoom->bEnableCameraLag = true;
+	CameraBoom->bEnableCameraRotationLag = true;
+	CameraBoom->CameraLagSpeed = 10.0f;
+	CameraBoom->CameraRotationLagSpeed = 10.0f;
+
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -379,8 +389,7 @@ void AdevelopmentCharacter::orientPlayerRotation() {
 
 	if (charVelocity.SizeSquared() > FMath::Square(checkLimit)) {
 		movementCheck = true;
-	}
-	else {
+	} else {
 		movementCheck = false;
 	}
 
