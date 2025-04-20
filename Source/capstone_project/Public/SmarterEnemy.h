@@ -14,6 +14,7 @@
 #include "BehaviorTree/BehaviorTree.h"
 #include "BehaviorTree/BlackboardComponent.h"
 #include "NavigationSystem.h"
+#include "Components/PrimitiveComponent.h"
 #include "SmarterEnemy.generated.h"
 
 class AwaveManager;

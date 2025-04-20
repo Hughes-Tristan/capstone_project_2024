@@ -22,7 +22,6 @@
 
 #include "SmarterEnemy.h"
 #include "developmentCharacterTH.h"
-#include "Components/PrimitiveComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "Components/SkeletalMeshComponent.h"
 #include "Components/SphereComponent.h"
@@ -81,6 +80,15 @@ void ASmarterEnemy::BeginPlay()
         GetCharacterMovement()->MaxWalkSpeed = RandomMoveSpeed;
     }
     waveManager = Cast<AwaveManager>(UGameplayStatics::GetActorOfClass(GetWorld(), AwaveManager::StaticClass()));
+
+    TArray<UPrimitiveComponent*> componentsArray;
+    GetComponents<UPrimitiveComponent>(componentsArray);
+    for (int32 i = 0; i < componentsArray.Num(); ++i) {
+        UPrimitiveComponent* component = componentsArray[i];
+        if (component) {
+            component->SetCollisionResponseToChannel(ECC_Camera, ECR_Ignore);
+        }
+    }
 	
 }
 
