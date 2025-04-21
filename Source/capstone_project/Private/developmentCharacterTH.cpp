@@ -127,8 +127,7 @@ AdevelopmentCharacter::AdevelopmentCharacter()
 	audioComp = CreateDefaultSubobject<UAudioComponent>(TEXT("AudioComponent"));
 	audioComp->SetupAttachment(RootComponent);
 	audioComp->bAutoActivate = false;
-	minPitch = 0.6f;
-	maxPitch = 1.4f;
+
 	meleeAudioDelay = 0.2f;
 
 	particleComp = CreateDefaultSubobject<UParticleSystemComponent>(TEXT("ParticleSystemComponent"));
@@ -146,6 +145,20 @@ AdevelopmentCharacter::AdevelopmentCharacter()
 	CameraBoom->CameraLagSpeed = 10.0f;
 	CameraBoom->CameraRotationLagSpeed = 10.0f;
 
+	// punching and damage defaults
+	damageValue = 50.0f;
+
+	punchDamageAmount = 15.0f;
+	punchDamageRange = 60.0f;
+
+	// dash variable defaults
+	canDash = true;
+	isDashing = false;
+
+	dashStaminaCost = 15.0f;
+	dashDuration = 1.0f;
+	dashDistance = 1000.0f;
+	dashCooldown = 1.0f;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -222,17 +235,20 @@ void AdevelopmentCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInp
 		
 		// input mappings for specific actions
 		// crouching
-		EnhancedInputComponent->BindAction(CrouchAction, ETriggerEvent::Started, this, &AdevelopmentCharacter::shouldCrouch);
+		EnhancedInputComponent->BindAction(crouchAction, ETriggerEvent::Started, this, &AdevelopmentCharacter::shouldCrouch);
 
 		// change animation state for development
-		EnhancedInputComponent->BindAction(SwitchAnimState, ETriggerEvent::Started, this, &AdevelopmentCharacter::setAnimationState);
+		EnhancedInputComponent->BindAction(switchAnimState, ETriggerEvent::Started, this, &AdevelopmentCharacter::setAnimationState);
 
 		// sprinting
-		EnhancedInputComponent->BindAction(SprintAction, ETriggerEvent::Started, this, &AdevelopmentCharacter::startSprinting);
-		EnhancedInputComponent->BindAction(SprintAction, ETriggerEvent::Completed, this, &AdevelopmentCharacter::stopSprinting);
+		EnhancedInputComponent->BindAction(sprintAction, ETriggerEvent::Started, this, &AdevelopmentCharacter::startSprinting);
+		EnhancedInputComponent->BindAction(sprintAction, ETriggerEvent::Completed, this, &AdevelopmentCharacter::stopSprinting);
 
 		// melee attack
-		EnhancedInputComponent->BindAction(MeleeAction, ETriggerEvent::Started, this, &AdevelopmentCharacter::shouldAnimate);
+		EnhancedInputComponent->BindAction(meleeAction, ETriggerEvent::Started, this, &AdevelopmentCharacter::shouldAnimate);
+
+		// dash mechanic
+		EnhancedInputComponent->BindAction(dashAction, ETriggerEvent::Started, this, &AdevelopmentCharacter::performDash);
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // CODE WITHIN THE BLOCK ABOVE IS WRITTEN BY Tristan Hughes
@@ -375,7 +391,6 @@ void AdevelopmentCharacter::Tick(float time) {
 			staminaComponent->getMaxStamina(),
 			staminaComponent->getStaminaAmount() * 100.0f);
 	}
-		
 }
 
 // this function updates the player rotation based on his velocity
@@ -484,13 +499,13 @@ void AdevelopmentCharacter::takeDamage(const UdamageInfo* damageInfo) {
 // this function is designed to do damage to an actor
 // if an actor is detected than setup damage info for the attack
 // if the cast to the enemy character is successful it will do damage to the enemy
-void AdevelopmentCharacter::doDamage(AActor* target) {
+void AdevelopmentCharacter::doDamage(AActor* target, float damageAmount) {
 	if (target) {
 		
 		UdamageInfo* damageInfo = NewObject<UdamageInfo>();
 
-		damageInfo->damageAmount = 10.0;
-		damageInfo->damageType = EDamageType::HeavyAttack;
+		damageInfo->damageAmount = damageAmount;
+		//damageInfo->damageType = EDamageType::HeavyAttack;
 		damageInfo->damageResponse = EDamageResponse::Melee;
 		damageInfo->isIndestructible = false;
 		damageInfo->attackingActor = this;
@@ -535,22 +550,36 @@ void AdevelopmentCharacter::meleeAttack() {
 		const FOverlapResult& overlapResult = storedHits[i];
 		AActor* enemy = overlapResult.GetActor();
 		if (enemy && enemy != this) {
-		
-			if (!actorOverlap.Contains(enemy) && canMelee) {
-				
+
+			if (!actorOverlap.Contains(enemy)) {
+
 				actorOverlap.Add(enemy);
-				doDamage(enemy);
+				if (canMelee) {
+					damageValue = 65;
+					doDamage(enemy, damageValue);
 
-				hitEnemy = true;
-				hitLocation = enemy->GetActorLocation();
-				playHitEffect(hitLocation);
+					hitEnemy = true;
+					hitLocation = enemy->GetActorLocation();
+					playHitEffect(hitLocation, meleeHitSound, meleeHitParticle, 1.0f, 0.6f, 1.4f);
+				}
+				else {
+					damageValue = 20;
+					doDamage(enemy, damageValue);
+
+					hitEnemy = true;
+					hitLocation = enemy->GetActorLocation();
+					playHitEffect(hitLocation, punchHitSound, punchHitParticle, 0.75f, .8f, 1.1f);
+				}
+
+				FColor sphereColor = storedHits.Num() > 0 ? FColor::Red : FColor::Green;
+				DrawDebugSphere(GetWorld(), charPos, hitRadius, 12, FColor::Green, false, 1.0, 0, 1.0);
 			}
-
-			FColor sphereColor = storedHits.Num() > 0 ? FColor::Red : FColor::Green;
-			DrawDebugSphere(GetWorld(), charPos, hitRadius, 12, FColor::Green, false, 1.0, 0, 1.0);
 		}
 	}
 }
+
+
+
 
 // this function is used to trigger an animation for the attacking control
 // it also sets the swinging particle effect and sound to play
@@ -558,19 +587,35 @@ void AdevelopmentCharacter::meleeAttack() {
 // cooldown for attacking has also been added to fix a melee bug
 void AdevelopmentCharacter::shouldAnimate(const FInputActionValue& Value) {
 	if (!isAttacking) {
+		float montageTime, attackDelay;
 		if (attackMontage && canMelee) {
 			isAttacking = true;
-			float montageTime;
+			
 			montageTime = PlayAnimMontage(attackMontage, 2.0f);
 
-			float attackDelay;
 			attackDelay = montageTime / 5;
 
-			playSwingEffect();
+			playSwingEffect(meleeSound, meleeSwing, weaponSocket, 0.6f, 1.4f);
 
 			GetWorldTimerManager().SetTimer(attackDelayHandle, this, &AdevelopmentCharacter::meleeAttack, attackDelay, false);
 
-			GetWorldTimerManager().SetTimer(meleeCooldownTimeHandle, this, &AdevelopmentCharacter::animationEnded, montageTime* 0.25f, false);
+			GetWorldTimerManager().SetTimer(meleeCooldownTimeHandle, this, &AdevelopmentCharacter::animationEnded, montageTime * 0.25f, false);
+		} else if (!canMelee) {
+			isAttacking = true;
+
+			UAnimMontage* punchAnimation = getRandomPunchAnimation();
+			if (punchAnimation) {
+				montageTime = PlayAnimMontage(punchAnimation, 1.0f);
+				attackDelay = montageTime / 5;
+				FName handSocket = FName("hand_r");
+				if (punchAnimation == leftPunchMontage) {
+					handSocket = FName("hand_l");
+				}
+				playSwingEffect(punchSound, punchSwingEffect, handSocket, 0.8f, 1.1f);
+				GetWorldTimerManager().SetTimer(attackDelayHandle, this, &AdevelopmentCharacter::meleeAttack, attackDelay, false);
+
+				GetWorldTimerManager().SetTimer(meleeCooldownTimeHandle, this, &AdevelopmentCharacter::animationEnded, montageTime * 0.25f, false);
+			}
 		}
 	}
 }
@@ -656,21 +701,20 @@ void AdevelopmentCharacter::animationEnded() {
 // this function is used to control the melee swing effects like sound and particle animation
 // it sets a timer to give the swing audio a slight delay and play the sound, it then sets up a niagara particle effect
 // it spawns the particle affect attached to the weapon socket, it then uses a timer to decide the duration the effect should play before being destroyed
-void  AdevelopmentCharacter::playSwingEffect() {
+void  AdevelopmentCharacter::playSwingEffect(USoundCue* swingSound, UNiagaraSystem* swingEffect, FName socketName, float minSoundPitch, float maxSoundPitch) {
 	GetWorldTimerManager().SetTimer(
 		meleeAudioTimerHandle,
-		this,
-		&AdevelopmentCharacter::playDelayedAudio,
+		[this, swingSound, minSoundPitch, maxSoundPitch]() { this->playAudio(swingSound, minSoundPitch, maxSoundPitch); },
 		meleeAudioDelay,
 		false
 	);
 	
-	if (meleeSwing) {
+	if (swingEffect) {
 
 		UNiagaraComponent* niagaraComp = UNiagaraFunctionLibrary::SpawnSystemAttached(
-			meleeSwing,
+			swingEffect,
 			GetMesh(),
-			weaponSocket,
+			socketName,
 			FVector::ZeroVector,
 			FRotator::ZeroRotator,
 			EAttachLocation::SnapToTarget,
@@ -690,16 +734,18 @@ void  AdevelopmentCharacter::playSwingEffect() {
 	}
 }
 
+
+
 // this function is used to control the melee hit effects such as sound and particle effects when a hit is detected
 // if there is a hit sound present then play the melee sound at the hit location with a random pitch range
 // if there is a hit partcile present the spawn the particle at the hit location at double the scale of the original particle
 // if there is a playerControler and melee camera shake is present then start a camera shake
-void  AdevelopmentCharacter::playHitEffect(const FVector& hitLocation) {
-	if (meleeHitSound) {
+void  AdevelopmentCharacter::playHitEffect(const FVector& hitLocation, USoundCue* hitSound, UParticleSystem* hitParticle, float cameraShakeIntensity, float minPitch, float maxPitch) {
+	if (hitSound) {
 		float randomPitch = FMath::RandRange(minPitch, maxPitch);
 		UGameplayStatics::PlaySoundAtLocation(
 			this,
-			meleeHitSound,
+			hitSound,
 			hitLocation,
 			1.0f,
 			randomPitch
@@ -707,10 +753,10 @@ void  AdevelopmentCharacter::playHitEffect(const FVector& hitLocation) {
 	}
 
 	FVector particleScale(2.0f, 2.0f, 2.0f);
-	if (meleeHitParticle) {
+	if (hitParticle) {
 		UGameplayStatics::SpawnEmitterAtLocation(
 			GetWorld(),
-			meleeHitParticle,
+			hitParticle,
 			hitLocation,
 			FRotator::ZeroRotator,
 			particleScale,
@@ -720,16 +766,16 @@ void  AdevelopmentCharacter::playHitEffect(const FVector& hitLocation) {
 
 	APlayerController* playerController = Cast<APlayerController>(GetController());
 	if (playerController && meleeCameraShake) {
-		playerController->ClientStartCameraShake(meleeCameraShake, 1.0f);
+		playerController->ClientStartCameraShake(meleeCameraShake, cameraShakeIntensity);
 	}
 }
 
 // this function is used to play the melee audio at a random pitch range 
-void AdevelopmentCharacter::playDelayedAudio() {
-	if (meleeSound && audioComp) {
+void AdevelopmentCharacter::playAudio(USoundCue* activeSound, float minPitch, float maxPitch) {
+	if (activeSound && audioComp) {
 		float randomPitch = FMath::RandRange(minPitch, maxPitch);
 
-		audioComp->SetSound(meleeSound);
+		audioComp->SetSound(activeSound);
 		audioComp->SetPitchMultiplier(randomPitch);
 		audioComp->Play();
 	}
@@ -738,4 +784,95 @@ void AdevelopmentCharacter::playDelayedAudio() {
 // this is a setter function for allowing melee
 void AdevelopmentCharacter::setCanMelee(bool shouldAllowMelee) {
 	canMelee = shouldAllowMelee;
+}
+
+// this function is used to randomize whether the character does a left or right punch when not holding a melee
+UAnimMontage* AdevelopmentCharacter::getRandomPunchAnimation() {
+	if (leftPunchMontage && rightPunchMontage) {
+		if (FMath::RandBool()) {
+			return leftPunchMontage;
+		} else {
+			return rightPunchMontage;
+		}
+	}
+	else {
+		return nullptr;
+	}
+}
+
+// this function is used to perform the dash
+// it checks to make sure you can dash otherwise it returns
+// then it gets the direction of movement, sets the dashing to true and the can dash to false
+// then it sets the dash force and it launches the player by a multiple of the dash force with the direction
+// then it sets a timer for ending the dash and reseting the dash cooldown
+void AdevelopmentCharacter::performDash(const FInputActionValue& Value) {
+	if (!canDash || !tryUseStamina(dashStaminaCost) || isCrouching || isDashing) {
+		return;
+	}
+
+	FVector forwardVector = GetActorForwardVector();
+	FVector velocityVector = GetVelocity();
+
+	if (velocityVector.SizeSquared() > 1.0f) {
+		velocityVector.Z = 0;
+		dashDirection = velocityVector.GetSafeNormal();
+	}
+	else {
+		dashDirection = forwardVector;
+	}
+
+	isDashing = true;
+	canDash = false;
+
+	float dashForce = 1600.0f;
+	GetCharacterMovement()->Launch(dashDirection * dashForce);
+
+
+	playDashEffects();
+	GetWorldTimerManager().SetTimer(dashDurationTH, this, &AdevelopmentCharacter::endDash, dashDuration, false);
+	GetWorldTimerManager().SetTimer(dashCooldownTH, this, &AdevelopmentCharacter::resetDashCooldown, dashCooldown, false);
+}
+
+void AdevelopmentCharacter::endDash() {
+	isDashing = false;
+	//GetCharacterMovement()->StopMovementImmediately();
+	GetCharacterMovement()->SetMovementMode(MOVE_Walking);
+}
+
+// this function is a flag reset for the canDash variable
+void AdevelopmentCharacter::resetDashCooldown() {
+	canDash = true;
+}
+
+
+// this function is used to control the sound, particles, and camera shake for the dash effect
+void AdevelopmentCharacter::playDashEffects() {
+	playAudio(dashSound, 0.9f, 1.1f);
+	if (dashEffect) {
+
+		UNiagaraComponent* niagaraComp = UNiagaraFunctionLibrary::SpawnSystemAttached(
+			dashEffect,
+			GetMesh(),
+			FName("torso"),
+			FVector::ZeroVector,
+			FRotator::ZeroRotator,
+			EAttachLocation::SnapToTarget,
+			true
+		);
+
+		if (niagaraComp) {
+			float duration = 0.5f;
+			FTimerHandle niagaraTimerHandle;
+			GetWorld()->GetTimerManager().SetTimer(niagaraTimerHandle, FTimerDelegate::CreateLambda([niagaraComp]() {
+				if (niagaraComp)
+				{
+					niagaraComp->DestroyComponent();
+				}
+				}), duration, false);
+		}
+	}
+	APlayerController* playerController = Cast<APlayerController>(GetController());
+	if (playerController && dashCameraShake) {
+		playerController->ClientStartCameraShake(dashCameraShake, 0.5f);
+	}
 }
