@@ -102,11 +102,11 @@ void Aenemycharacter1::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 // this function is designed to handle the functionality for the enemy taking damage
 // if the function receives damage info then apply damage using the modular damage system
 // it also stores the attacking actor
-void Aenemycharacter1::takeDamage(const UdamageInfo* damageInfo) {
+void Aenemycharacter1::takeDamage(const UdamageInfo* damageInfo, float damage) {
     if (damageInfo) {
         if (damageComponent) {
 
-            damageComponent->applyDamage(damageInfo);
+            damageComponent->applyDamage(damageInfo, damage);
             lastAttacker = damageInfo->attackingActor;
             if (damageComponent->isDead) {
                 destroy();
@@ -127,8 +127,8 @@ void Aenemycharacter1::OnAttackRangeOverlapBegin(UPrimitiveComponent* Overlapped
         {
             //Joey Bertrand
             PlayAttackMontage();
-            
-            doDamage(mainCharacter);
+            float damage = 25;
+            doDamage(mainCharacter, damage);
             canAttack = false;
             GetWorld()->GetTimerManager().SetTimer(timerHandle, this, &Aenemycharacter1::shouldAttack, cooldownTime, false);
         }
@@ -138,7 +138,7 @@ void Aenemycharacter1::OnAttackRangeOverlapBegin(UPrimitiveComponent* Overlapped
 // this function is designed to do damage to an actor
 // if an actor is detected than setup damage info for the attack
 // if the cast to the development character is successful it will do damage to the main player
-void Aenemycharacter1::doDamage(AActor* target) {
+void Aenemycharacter1::doDamage(AActor* target, float damageAmount) {
     if (target) {
         UdamageInfo* damageInfo = NewObject<UdamageInfo>();
 
@@ -149,7 +149,7 @@ void Aenemycharacter1::doDamage(AActor* target) {
         
         AdevelopmentCharacter* mainPlayer = Cast<AdevelopmentCharacter>(target);
         if (mainPlayer) {
-            mainPlayer->takeDamage(damageInfo);
+            mainPlayer->takeDamage(damageInfo, damageAmount);
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
         }
@@ -196,7 +196,8 @@ void Aenemycharacter1::CheckCombatTarget()
         EnemyState = EEnemyState::EES_Attacking;
         //Animation Attack Montage called
         PlayAttackMontage();
-        doDamage(CombatTarget);
+        float damage = 25;
+        doDamage(CombatTarget, damage);
     }
 }
 

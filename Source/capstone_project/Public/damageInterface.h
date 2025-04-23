@@ -41,7 +41,7 @@ class CAPSTONE_PROJECT_API IdamageInterface
 
 public:
 	virtual void applyHealth(float healthAmount) = 0;
-	virtual void applyDamage(const UdamageInfo* damageInfo) = 0;
+	virtual void applyDamage(const UdamageInfo* damageInfo, float damageDirect) = 0;
 	virtual float getHealth() const = 0;
 	virtual float getMaxHealth() const = 0;
 };

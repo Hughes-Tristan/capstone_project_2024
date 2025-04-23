@@ -47,7 +47,7 @@ public:
 	virtual void applyHealth(float healthAmount) override;
 
 	UFUNCTION(BlueprintCallable, Category = "Damage")
-	virtual void applyDamage(const UdamageInfo* damageInfo) override;
+	virtual void applyDamage(const UdamageInfo* damageInfo, float damageDirect) override;
 
 	UFUNCTION(BlueprintCallable, Category = "Damage")
 	virtual float getHealth() const override;

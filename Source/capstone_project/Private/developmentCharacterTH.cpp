@@ -41,6 +41,7 @@
 #include "damageInfo.h"
 #include "enemycharacter1.h"
 #include "SmarterEnemy.h"
+#include "BossCharacter.h"
 #include "enemyPatrolCharacter.h"
 #include "CollisionQueryParams.h"
 #include "CollisionShape.h"
@@ -488,17 +489,17 @@ float AdevelopmentCharacter::setSmoothArmLength(float currentLength, float targe
 
 // this function is designed to handle the functionality for the player taking damage
 // if the function receives damage info then apply damage using the modular damage system
-void AdevelopmentCharacter::takeDamage(const UdamageInfo* damageInfo) {
+void AdevelopmentCharacter::takeDamage(const UdamageInfo* damageInfo, float damage) {
 	if (damageInfo) {
 		if (damageComponent) {
-			damageComponent->applyDamage(damageInfo);
+			damageComponent->applyDamage(damageInfo, damage);
 		}
 	}
 }
 
 // this function is designed to do damage to an actor
 // if an actor is detected than setup damage info for the attack
-// if the cast to the enemy character is successful it will do damage to the enemy
+// if the cast to the enemy character is successful it will do dama`ge to the enemy
 void AdevelopmentCharacter::doDamage(AActor* target, float damageAmount) {
 	if (target) {
 		
@@ -513,12 +514,17 @@ void AdevelopmentCharacter::doDamage(AActor* target, float damageAmount) {
 		Aenemycharacter1* enemyPresent = Cast<Aenemycharacter1>(target);
 
 		if (enemyPresent) {
-			enemyPresent->takeDamage(damageInfo);
+			enemyPresent->takeDamage(damageInfo, damageAmount);
 		}
 
 		ASmarterEnemy* smarterEnemy = Cast<ASmarterEnemy>(target);
 		if (smarterEnemy) {
-			smarterEnemy->takeDamage(damageInfo);
+			smarterEnemy->takeDamage(damageInfo, damageAmount);
+		}
+
+		ABossCharacter* bossCharacter = Cast<ABossCharacter>(target);
+		if (bossCharacter) {
+			bossCharacter->takeDamage(damageInfo, damageAmount);
 		}
 	}
 }
