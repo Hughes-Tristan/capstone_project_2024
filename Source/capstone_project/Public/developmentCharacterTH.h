@@ -303,6 +303,12 @@ private:
 	float displayedStamina;
 
 	FVector2D defaultBarScale = FVector2D(1.0f, 1.0f);
+    
+    //Take Damage HUD
+    UPROPERTY(EditAnywhere, Category = "UI")
+    TSubclassOf<UUserWidget> DamageVignetteClass;
+    
+    UUserWidget* HitReactWidget;
 
 	// audio variables
 	UPROPERTY(EditAnywhere)
