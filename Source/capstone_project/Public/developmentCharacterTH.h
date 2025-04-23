@@ -111,19 +111,31 @@ class AdevelopmentCharacter : public ACharacter
 	UInputAction* LookAction;
 
 	
+	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// CODE WITHIN THE BLOCK ABOVE IS WRITTEN BY Unreal Engine
+	//
+	// CODE WITHIN THE BLOCK BELOW IS WRITTEN BY Tristan Hughes
+	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// input actions for given movements
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
-	UInputAction* CrouchAction;
+	UInputAction* crouchAction;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
-	UInputAction* SwitchAnimState;
+	UInputAction* switchAnimState;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
-	UInputAction* SprintAction;
+	UInputAction* sprintAction;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
-	UInputAction* MeleeAction;
+	UInputAction* meleeAction;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	UInputAction* dashAction;
+
+	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// CODE WITHIN THE BLOCK ABOVE IS WRITTEN BY Tristan Hughes
+	// CODE WITHIN THE BLOCK BELOW IS WRITTEN BY Unreal Engine
+	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 public:
 	AdevelopmentCharacter();
 
@@ -179,7 +191,10 @@ public:
 	void takeDamage(const UdamageInfo* damageInfo);
 
 	UFUNCTION(BlueprintCallable, Category = "Damage")
-	void doDamage(AActor* target);
+	void doDamage(AActor* target, float damageAmount);
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Damage")
+	float damageValue;
 
 	UFUNCTION(BlueprintCallable, Category = "Damage")
 	void shouldAnimate(const FInputActionValue& Value);
@@ -216,6 +231,20 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "MeleeFlag")
 	void setCanMelee(bool shouldAllowMelee);
 
+	// punching flag and animations
+	//UPROPERTY(BlueprintReadWrite)
+	//bool canPunch;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Animation")
+	UAnimMontage* leftPunchMontage;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Animation")
+	UAnimMontage* rightPunchMontage;
+
+	// dash function
+	UFUNCTION(BlueprintCallable, Category = "Movement")
+	void performDash(const FInputActionValue& Value);
+
 private:
 	// private variables associated with character actions
 	UPROPERTY(BlueprintReadWrite, Category = "Movement", meta = (AllowPrivateAccess = "true"))
@@ -245,8 +274,6 @@ private:
 	FTimerHandle meleeCooldownTimeHandle;
 
 	void animationEnded();
-
-
 
 	float setCurrentLength = 250.0f;
 	float setTargetLength = 250.0f;
@@ -293,15 +320,9 @@ private:
 	UPROPERTY(EditAnywhere)
 	float meleeAudioDelay;
 
-	UPROPERTY(EditAnywhere)
-	float minPitch;
-
-	UPROPERTY(EditAnywhere)
-	float maxPitch;
-
 	FTimerHandle meleeAudioTimerHandle;
 
-	void playDelayedAudio();
+	void playAudio(USoundCue* activeSound, float minPitch, float maxPitch);
 
 	// particle variables
 	UPROPERTY(EditAnywhere)
@@ -319,13 +340,76 @@ private:
 
 	// effects methods
 
-	void playSwingEffect();
+	void playSwingEffect(USoundCue* swingSound, UNiagaraSystem* swingEffect, FName socketName, float minSoundPitch, float maxSoundPitch);
 
-	void playHitEffect(const FVector& hitLocation);
+	void playHitEffect(const FVector& hitLocation, USoundCue* hitSound, UParticleSystem* hitParticle, float cameraShakeIntensity, float minPitch, float maxPitch);
 
 	// camerashake
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<UCameraShakeBase> meleeCameraShake;
+
+
+	// punching
+	UPROPERTY(EditAnywhere, Category = "Sounds", meta = (AllowPrivateAccess = "true"))
+	USoundCue* punchSound;
+
+	UPROPERTY(EditAnywhere, Category = "Sounds", meta = (AllowPrivateAccess = "true"))
+	USoundCue* punchHitSound;
+
+	UPROPERTY(EditAnywhere, Category = "Effects", meta = (AllowPrivateAccess = "true"))
+	UNiagaraSystem* punchSwingEffect;
+
+	UPROPERTY(EditAnywhere, Category = "Effects", meta = (AllowPrivateAccess = "true"))
+	UParticleSystem* punchHitParticle;
+
+	UPROPERTY(EditAnywhere, Category = "Punch", meta = (AllowPrivateAccess = "true"))
+	float punchDamageRange;
+
+	UPROPERTY(EditAnywhere, Category = "Punch", meta = (AllowPrivateAccess = "true"))
+	float punchDamageAmount;
+
+	UAnimMontage* getRandomPunchAnimation();
+
+
+	// dash variables
+	UPROPERTY(EditAnywhere, Category = "Dash", meta = (AllowPrivateAccess = "true"))
+	float dashDistance;
+
+	UPROPERTY(EditAnywhere, Category = "Dash", meta = (AllowPrivateAccess = "true"))
+	float dashDuration;
+
+	UPROPERTY(EditAnywhere, Category = "Stamina", meta = (AllowPrivateAccess = "true"))
+	float dashStaminaCost;
+
+	UPROPERTY(EditAnywhere, Category = "Audio")
+	USoundCue* dashSound;
+
+	UPROPERTY(EditAnywhere, Category = "Effects")
+	UNiagaraSystem* dashEffect;
+
+	UPROPERTY(EditAnywhere, Category = "Effects")
+	TSubclassOf<UCameraShakeBase> dashCameraShake;
+
+	bool canDash;
+
+	UPROPERTY(EditAnywhere, Category = "Dash", meta = (AllowPrivateAccess = "true"))
+	float dashCooldown;
+
+	bool isDashing;
+
+	FTimerHandle dashCooldownTH;
+	FTimerHandle dashDurationTH;
+	FVector dashDirection;
+
+	// dash functions
+	UFUNCTION(BlueprintCallable, Category = "Movement")
+	void endDash();
+
+	UFUNCTION(BlueprintCallable, Category = "Movement")
+	void resetDashCooldown();
+
+	void playDashEffects();
+
 };
 
 
