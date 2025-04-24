@@ -198,7 +198,19 @@ void AdevelopmentCharacter::BeginPlay()
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// CODE WITHIN THE BLOCK BELOW IS WRITTEN BY Tristan Hughes
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    if (DamageVignetteClass) {
+            APlayerController* playercontroller = Cast<APlayerController>(GetController());
+            if (playercontroller) {
+                HitReactWidget = CreateWidget<UUserWidget>(playercontroller, DamageVignetteClass);
+                if (HitReactWidget) {
+                    HitReactWidget->AddToViewport();
+            }
+        }
+
+    }
 }
+
+
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // CODE WITHIN THE BLOCK BELOW IS WRITTEN BY Unreal Engine
@@ -493,9 +505,22 @@ void AdevelopmentCharacter::takeDamage(const UdamageInfo* damageInfo, float dama
 	if (damageInfo) {
 		if (damageComponent) {
 			damageComponent->applyDamage(damageInfo, damage);
+            if (HitReactWidget) {
+                UFunction* pulseFunction = HitReactWidget->FindFunction(FName("PlayVignettePulse"));
+                if (pulseFunction)
+                {
+                    HitReactWidget->ProcessEvent(pulseFunction, nullptr);
+                }
+            
+            }
 		}
+        
 	}
+    
+
 }
+
+
 
 // this function is designed to do damage to an actor
 // if an actor is detected than setup damage info for the attack
@@ -882,3 +907,4 @@ void AdevelopmentCharacter::playDashEffects() {
 		playerController->ClientStartCameraShake(dashCameraShake, 0.5f);
 	}
 }
+
