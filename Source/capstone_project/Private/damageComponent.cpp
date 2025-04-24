@@ -74,7 +74,7 @@ void UdamageComponent::applyDirectDamage(float damageAmount) {
 // it then casts to a character 
 // afterwords it uses a switch statement to handle different attacks and damages associated with those attack
 // once that is done we apply the damage and check to see if the player should be dead or not
-void UdamageComponent::applyDamage(const UdamageInfo* damageInfo) {
+void UdamageComponent::applyDamage(const UdamageInfo* damageInfo, float damageDirect) {
 	if (damageInfo->isIndestructible || isDead) {
 		return;
 	}
@@ -83,32 +83,42 @@ void UdamageComponent::applyDamage(const UdamageInfo* damageInfo) {
 	if (!player) {
 		return;
 	}
+
+	float damageApplied = damageInfo->damageAmount;
+
+	
 	
 	if (!damageInfo->isIndestructible) {
-		float damageApplied = damageInfo->damageAmount;
-		switch (damageInfo->damageType) {
-		case EDamageType::None:
-			damageApplied = 0.0;
-			TEXT("No Damage Taken");
-			break;
-            
-
-
-		case EDamageType::EnemyAttack:
-			damageApplied = 5;
-			break;
-
-		case EDamageType::LightAttack:
-			damageApplied = 24;
-			break;
-
-		case EDamageType::HeavyAttack:
-			damageApplied = 51;
-			break;
-
-		default:
-			break;
+		
+		if (damageDirect > 0) {
+			damageApplied = damageDirect;
 		}
+		else {
+			switch (damageInfo->damageType) {
+			case EDamageType::None:
+				damageApplied = 0.0;
+				TEXT("No Damage Taken");
+				break;
+
+			case EDamageType::EnemyAttack:
+				damageApplied = 5;
+				break;
+
+			case EDamageType::LightAttack:
+				damageApplied = 24;
+				break;
+
+			case EDamageType::HeavyAttack:
+				damageApplied = 51;
+				break;
+
+			default:
+				damageApplied = damageDirect;
+				break;
+			}
+		}
+
+			
 
 		health -= damageApplied;
 

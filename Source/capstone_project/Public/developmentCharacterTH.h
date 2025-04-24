@@ -188,7 +188,7 @@ public:
 
 	// fucntions for using the modular damage system
 	UFUNCTION(BlueprintCallable, Category = "Damage")
-	void takeDamage(const UdamageInfo* damageInfo);
+	void takeDamage(const UdamageInfo* damageInfo, float damage);
 
 	UFUNCTION(BlueprintCallable, Category = "Damage")
 	void doDamage(AActor* target, float damageAmount);

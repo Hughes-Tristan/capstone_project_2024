@@ -30,10 +30,10 @@ public:
 	ASmarterEnemy();
     
     UFUNCTION(BlueprintCallable, Category = "Damage")
-    void takeDamage(const UdamageInfo* damageInfo);
+    void takeDamage(const UdamageInfo* damageInfo, float damage);
 
     UFUNCTION(BlueprintCallable, Category = "Damage")
-    void doDamage(AActor* target);
+    void doDamage(AActor* target, float damage);
     
     UPROPERTY(EditAnywhere, BlueprintReadOnly)
     float MinSpeed = 150.0f;
@@ -69,7 +69,7 @@ public:
     AActor* currentTarget;
 
     UFUNCTION(BlueprintCallable, Category = "Combat")
-    void onAttackHit();
+    void onAttackHit(float damage);
 
     UFUNCTION(BlueprintCallable, Category = "Combat")
     void onAttackSound();

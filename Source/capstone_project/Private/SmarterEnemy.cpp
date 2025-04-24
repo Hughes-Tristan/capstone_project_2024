@@ -112,11 +112,11 @@ void ASmarterEnemy::SetupPlayerInputComponent(UInputComponent* PlayerInputCompon
 // this function is designed to handle the functionality for the enemy taking damage
 // if the function receives damage info then apply damage using the modular damage system
 // it also stores the attacking actor
-void ASmarterEnemy::takeDamage(const UdamageInfo* damageInfo) {
+void ASmarterEnemy::takeDamage(const UdamageInfo* damageInfo, float damage) {
     if (damageInfo) {
         if (damageComponent) {
 
-            damageComponent->applyDamage(damageInfo);
+            damageComponent->applyDamage(damageInfo, damage);
             lastAttacker = damageInfo->attackingActor;
             if (damageComponent->isDead) {
                 destroy();
@@ -147,7 +147,7 @@ void ASmarterEnemy::OnAttackRangeOverlapBegin(UPrimitiveComponent* OverlappedCom
 // this function is designed to do damage to an actor
 // if an actor is detected than setup damage info for the attack
 // if the cast to the development character is successful it will do damage to the main player
-void ASmarterEnemy::doDamage(AActor* target) {
+void ASmarterEnemy::doDamage(AActor* target, float damage) {
     if (target) {
         UdamageInfo* damageInfo = NewObject<UdamageInfo>();
 
@@ -158,7 +158,7 @@ void ASmarterEnemy::doDamage(AActor* target) {
         
         AdevelopmentCharacter* mainPlayer = Cast<AdevelopmentCharacter>(target);
         if (mainPlayer) {
-            mainPlayer->takeDamage(damageInfo);
+            mainPlayer->takeDamage(damageInfo, damage);
         }
     }
 }
@@ -199,11 +199,12 @@ void ASmarterEnemy::shouldAttack() {
 // when triggeed it will check if there is a currentTarget and if the canAttack flag is true
 // if it is true then it will do damgage to the target, it will player the attack hit sound, and it will cause the players camera to shake
 // it then resets the canAttack flag on a timer
-void ASmarterEnemy::onAttackHit() {
-    UE_LOG(LogTemp, Warning, TEXT("OnAttackHit called on %s!"), *GetName());
+void ASmarterEnemy::onAttackHit(float damage) {
+    //UE_LOG(LogTemp, Warning, TEXT("OnAttackHit called on %s!"), *GetName());
     if (currentTarget && canAttack)
     {
-        doDamage(currentTarget);
+        doDamage(currentTarget, damage);
+        canAttack = false;
         if (attackHitSound)
         {
             UGameplayStatics::PlaySoundAtLocation(
@@ -226,7 +227,7 @@ void ASmarterEnemy::onAttackHit() {
                 }
             }
         }
-        canAttack = false;
+        
         GetWorld()->GetTimerManager().SetTimer(timerHandle, this, &ASmarterEnemy::shouldAttack, cooldownTime, false);
     }
 

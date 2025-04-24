@@ -65,10 +65,10 @@ public:
     // Code written by Tristan Hughes
     // these are functions and objects used in the damage system and wave manager
     UFUNCTION(BlueprintCallable, Category = "Damage")
-    void takeDamage(const UdamageInfo* damageInfo);
+    void takeDamage(const UdamageInfo* damageInfo, float damage);
 
     UFUNCTION(BlueprintCallable, Category = "Damage")
-    void doDamage(AActor* target);
+    void doDamage(AActor* target, float damageAmount);
     
     UPROPERTY(EditAnywhere, BlueprintReadOnly)
     float MinSpeed = 350.0f;
