@@ -98,6 +98,9 @@ private:
     UPROPERTY(BlueprintReadWrite, Category = "Damage", meta = (AllowPrivateAccess = "true"))
     UdamageComponent* damageComponent;
     
+    UPROPERTY(BlueprintReadWrite)
+    bool BossIsReacting = false;
+    
     //void UpdateBossHealthBarVisibility();
 
     
