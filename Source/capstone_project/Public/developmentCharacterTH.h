@@ -231,6 +231,9 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "MeleeFlag")
 	void setCanMelee(bool shouldAllowMelee);
 
+	UFUNCTION(BlueprintCallable, Category = "DamageFloat")
+	void setDamageValue(float damageFloat);
+
 	// punching flag and animations
 	//UPROPERTY(BlueprintReadWrite)
 	//bool canPunch;
