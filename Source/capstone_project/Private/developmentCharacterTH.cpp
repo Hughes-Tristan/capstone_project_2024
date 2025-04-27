@@ -12,11 +12,11 @@
 *
 *   LICENSE: Personal Use
 *
-*   Copyright © 2025 Tristan Hughes and 2025 UNR Capstone Team 10. All Rights Reserved.
-*   This software is based on Unreal Engine (© 1998-2025 Epic Games, Inc.), and is subject to the terms of Unreal Engine's End User License Agreement (EULA).
+*   Copyright ï¿½ 2025 Tristan Hughes and 2025 UNR Capstone Team 10. All Rights Reserved.
+*   This software is based on Unreal Engine (ï¿½ 1998-2025 Epic Games, Inc.), and is subject to the terms of Unreal Engine's End User License Agreement (EULA).
 *   Unauthorized use, reproduction, or distribution of this code, or parts of it, without proper authorization is prohibited.
 *
-*   Unreal Engine’s base code and components are used under the Unreal Engine License, which can be reviewed at:
+*   Unreal Engineï¿½s base code and components are used under the Unreal Engine License, which can be reviewed at:
 *   https://www.unrealengine.com/en-US/eula
 *
 *   Unauthorized copying of this file, via any medium is strictly prohibited
@@ -617,7 +617,7 @@ void AdevelopmentCharacter::meleeAttack() {
 					playHitEffect(hitLocation, meleeHitSound, meleeHitParticle, 1.0f, 0.6f, 1.4f);
 				}
 				else {
-					//damageValue = 20;
+					damageValue = 20;
 					doDamage(enemy, damageValue);
 
 					hitEnemy = true;
