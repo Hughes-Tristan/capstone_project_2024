@@ -14,6 +14,7 @@ ABossCharacter::ABossCharacter()
     
     damageComponent = CreateDefaultSubobject<UdamageComponent>(TEXT("DamageComponent"));
     
+    
     audioComponent = CreateDefaultSubobject<UAudioComponent>(TEXT("AudioComponent"));
     audioComponent->SetupAttachment(RootComponent);
     audioComponent->bAutoActivate = false;
@@ -54,7 +55,24 @@ void ABossCharacter::BeginPlay()
 void ABossCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+    
+   /* if (HealthbarHUD)
+    {
+        ACharacter* PlayerCharacter = UGameplayStatics::GetPlayerCharacter(GetWorld(), 0);
+        if (PlayerCharacter)
+        {
+            float Distance = FVector::Dist(GetActorLocation(), PlayerCharacter->GetActorLocation());
 
+            if (Distance <= 1500.0f)
+            {
+                HealthbarHUD->SetVisibility(ESlateVisibility::Visible);
+            }
+            else
+            {
+                HealthbarHUD->SetVisibility(ESlateVisibility::Hidden);
+            }
+        }
+    }*/
 }
 
 // Called to bind functionality to input

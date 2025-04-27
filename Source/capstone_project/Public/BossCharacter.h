@@ -95,8 +95,14 @@ protected:
     //void HandleHealth();
     
 private:
-    UPROPERTY(EditAnywhere, Category = "Boss Damage")
+    UPROPERTY(BlueprintReadWrite, Category = "Damage", meta = (AllowPrivateAccess = "true"))
     UdamageComponent* damageComponent;
     
+    //void UpdateBossHealthBarVisibility();
 
+    
+    //UPROPERTY(EditAnywhere, Category = "UI")
+    //TSubclassOf<UUserWidget> HealthBarClass;
+    
+    //UUserWidget* HealthbarHUD;
 };
