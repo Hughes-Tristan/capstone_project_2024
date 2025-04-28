@@ -39,6 +39,18 @@ public:
     //virtual float getMaxHealth() const;
     */
 
+    //HitReact Montage Reference
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combat")
+    UAnimMontage* HitreactMontage;
+    
+    //function for HitReact Montage
+    UFUNCTION(BlueprintCallable, Category = "Combat")
+    
+    void PlayHitReactMontage();
+    
+    UPROPERTY(BlueprintReadWrite)
+    bool BossIsReacting = false;
+    
     UFUNCTION(BlueprintCallable, Category = "Damage")
     void takeDamage(const UdamageInfo* damageInfo, float damage);
 
@@ -98,8 +110,7 @@ private:
     UPROPERTY(BlueprintReadWrite, Category = "Damage", meta = (AllowPrivateAccess = "true"))
     UdamageComponent* damageComponent;
     
-    UPROPERTY(BlueprintReadWrite)
-    bool BossIsReacting = false;
+
     
     //void UpdateBossHealthBarVisibility();
 

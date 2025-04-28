@@ -104,6 +104,8 @@ void ABossCharacter::takeDamage(const UdamageInfo* damageInfo, float damage) {
     if (damageInfo) {
         if (damageComponent) {
             damageComponent->applyDamage(damageInfo, damage);
+            
+            PlayHitReactMontage();
         }
     }
 }
@@ -183,6 +185,25 @@ void ABossCharacter::shouldAttack() {
     canAttack = true;
 }
 
+void ABossCharacter::PlayHitReactMontage()
+{
+    if (HitreactMontage && GetMesh() && GetMesh()->GetAnimInstance())
+    {
+        UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+
+        if (!AnimInstance->Montage_IsPlaying(HitreactMontage))
+        {
+            // Montage play tweaks
+            float PlayRate = 1.0f;
+            float StartPosition = 0.0f;
+            float BlendInTime = 0.8f;
+            float BlendOutTime = 0.0f;
+             
+
+            AnimInstance->Montage_Play(HitreactMontage, 2.0f, EMontagePlayReturnType::MontageLength, 0.0f, false);
+        }
+    }
+}
 
 
 /*float ABossCharacter::getHealth() const
