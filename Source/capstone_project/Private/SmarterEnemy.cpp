@@ -120,6 +120,7 @@ void ASmarterEnemy::takeDamage(const UdamageInfo* damageInfo, float damage) {
             lastAttacker = damageInfo->attackingActor;
             PlayHitReactMontage();
             if (damageComponent->isDead) {
+                canAttack = false;
                 destroy();
             }
         }
@@ -171,6 +172,14 @@ void ASmarterEnemy::doDamage(AActor* target, float damage) {
 // if there is a blueprint to spawn then determine the objects spawning based in its percent
 // then configure parametors for the actor and spawn the actor
 void ASmarterEnemy::destroy() {
+
+   
+    GetCharacterMovement()->StopMovementImmediately();
+    UAnimInstance* animInstance = GetMesh()->GetAnimInstance();
+    if (animInstance) {
+        animInstance->StopAllMontages(0.1f);
+    }
+    disableAttack();
     AdevelopmentCharacter* player = Cast<AdevelopmentCharacter>(lastAttacker);
     if (player && waveManager) {
         if (waveManager->IsValidLowLevel()) {
@@ -243,6 +252,27 @@ void ASmarterEnemy::onAttackSound(){
         audioComponent->SetSound(attackSound);
         audioComponent->SetPitchMultiplier(randomPitch);
         audioComponent->Play();
+    }
+}
+
+// this function is designed to stop the attack after the enemy has died
+// this was to fix a glitch where the enemy would attack the player even though the enemy was dead
+void ASmarterEnemy::disableAttack() {
+    if (sphereComponent) {
+        sphereComponent->SetGenerateOverlapEvents(false);
+        sphereComponent->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+    }
+
+    currentTarget = nullptr;
+    canAttack = false;
+
+    AAIController* aiController = Cast<AAIController>(GetController());
+    if (aiController) {
+        UBehaviorTreeComponent* behaviorComp = aiController->FindComponentByClass<UBehaviorTreeComponent>();
+        if (behaviorComp) {
+            behaviorComp->StopTree();
+        }
+        aiController->UnPossess();
     }
 }
 

@@ -42,6 +42,8 @@ public:
 
     void shouldAttack();
 
+    void disableAttack();
+
     //HitReact Montage Reference
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combat")
     UAnimMontage* EnemyHitReact;
@@ -111,8 +113,6 @@ protected:
     
     USphereComponent* sphereComponent;
 
-    // damage component object
-    UdamageComponent* damageComponent;
 
 public:	
 	// Called every frame
@@ -120,5 +120,9 @@ public:
 
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+
+    // damage component object
+    UdamageComponent* damageComponent;
+
 
 };
