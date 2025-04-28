@@ -12,7 +12,7 @@
 *
 *   LICENSE: Personal Use
 *
-*   Copyright © 2025 UNR Capstone Team 10. All Rights Reserved.
+*   Copyright ï¿½ 2025 UNR Capstone Team 10. All Rights Reserved.
 *
 *   Unauthorized copying of this file, via any medium is strictly prohibited
 *   This project is personal and confidential unless stated otherwise.
@@ -118,6 +118,7 @@ void ASmarterEnemy::takeDamage(const UdamageInfo* damageInfo, float damage) {
 
             damageComponent->applyDamage(damageInfo, damage);
             lastAttacker = damageInfo->attackingActor;
+            PlayHitReactMontage();
             if (damageComponent->isDead) {
                 destroy();
             }
@@ -245,4 +246,23 @@ void ASmarterEnemy::onAttackSound(){
     }
 }
 
+void ASmarterEnemy::PlayHitReactMontage()
+{
+    if (EnemyHitReact && GetMesh() && GetMesh()->GetAnimInstance())
+    {
+        UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+
+        if (!AnimInstance->Montage_IsPlaying(EnemyHitReact))
+        {
+            // Montage play tweaks
+            float PlayRate = 1.0f;
+            float StartPosition = 0.0f;
+            float BlendInTime = 0.8f;
+            float BlendOutTime = 0.0f;
+             
+
+            AnimInstance->Montage_Play(EnemyHitReact, 2.0f, EMontagePlayReturnType::MontageLength, 0.0f, false);
+        }
+    }
+}
 
