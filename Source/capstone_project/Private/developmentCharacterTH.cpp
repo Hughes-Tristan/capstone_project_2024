@@ -160,6 +160,13 @@ AdevelopmentCharacter::AdevelopmentCharacter()
 	dashDuration = 1.0f;
 	dashDistance = 1000.0f;
 	dashCooldown = 1.0f;
+
+	//blocking
+	blocking = false;
+	//blockDamageReduction = 0.99f;
+	blockStaminaDrainRate = 2.5f;
+
+	inHitReaction = false;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -262,6 +269,10 @@ void AdevelopmentCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInp
 
 		// dash mechanic
 		EnhancedInputComponent->BindAction(dashAction, ETriggerEvent::Started, this, &AdevelopmentCharacter::performDash);
+
+		//block mechanic
+		EnhancedInputComponent->BindAction(blockAction, ETriggerEvent::Started, this, &AdevelopmentCharacter::startBlocking);
+		EnhancedInputComponent->BindAction(blockAction, ETriggerEvent::Completed, this, &AdevelopmentCharacter::stopBlocking);
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // CODE WITHIN THE BLOCK ABOVE IS WRITTEN BY Tristan Hughes
@@ -404,6 +415,15 @@ void AdevelopmentCharacter::Tick(float time) {
 			staminaComponent->getMaxStamina(),
 			staminaComponent->getStaminaAmount() * 100.0f);
 	}
+
+
+	// blocking loop
+	if (blocking && blockMontage && !inHitReaction) {
+		UAnimInstance* animInstance = GetMesh()->GetAnimInstance();
+		if (animInstance && !animInstance->Montage_IsPlaying(blockMontage)) {
+			PlayAnimMontage(blockMontage, 1.0f);
+		}
+	}
 }
 
 // this function updates the player rotation based on his velocity
@@ -434,6 +454,10 @@ void AdevelopmentCharacter::orientPlayerRotation() {
 // crouch if not crouch and uncrouch when crouched
 // changed walk speed and camera arm length based on state
 void AdevelopmentCharacter::shouldCrouch(const FInputActionValue& Value) {
+	if (blocking) {
+		return;
+	}
+
 	if (isCrouching) {
 		GetCharacterMovement()->UnCrouch();
 		isCrouching = false;
@@ -463,15 +487,17 @@ void AdevelopmentCharacter::setAnimationState(const FInputActionValue& Value) {
 // this function is used to initiate the action of sprinting
 // if the player is crouching then they cant sprint
 void AdevelopmentCharacter::startSprinting(const FInputActionValue& Value) {
-	if (isCrouching == false && tryUseStamina(staminaCostEverySecond * 0.5f)) {
-		isSprinting = true;
-		GetCharacterMovement()->MaxWalkSpeed = 750.f;
-		moveSpeed = 750.f;
+	if (canSprint) {
+		if (isCrouching == false && !blocking && tryUseStamina(staminaCostEverySecond * 0.5f)) {
+			isSprinting = true;
+			GetCharacterMovement()->MaxWalkSpeed = 750.f;
+			moveSpeed = 750.f;
 
-		GetWorldTimerManager().SetTimer(sprintStaminaTH, this, &AdevelopmentCharacter::sprintStamina, 0.1f, true);
+			GetWorldTimerManager().SetTimer(sprintStaminaTH, this, &AdevelopmentCharacter::sprintStamina, 0.1f, true);
 
-		if (staminaComponent) {
-			staminaComponent->setStaminaGain(false);
+			if (staminaComponent) {
+				staminaComponent->setStaminaGain(false);
+			}
 		}
 	}
 }
@@ -504,6 +530,29 @@ float AdevelopmentCharacter::setSmoothArmLength(float currentLength, float targe
 void AdevelopmentCharacter::takeDamage(const UdamageInfo* damageInfo, float damage) {
 	if (damageInfo) {
 		if (damageComponent) {
+			if (blocking) {
+				FVector damageDirection = FVector::ZeroVector;
+				FVector hitLocation = GetActorLocation();
+				if (damageInfo->attackingActor) {
+					damageDirection = damageInfo->attackingActor->GetActorLocation() - GetActorLocation();
+					damageDirection.Z = 0;
+					damageDirection.Normalize();
+				}
+
+				FVector forwardVector = GetActorForwardVector();
+				forwardVector.Z = 0;
+				forwardVector.Normalize();
+
+				float dotProduct = FVector::DotProduct(forwardVector, damageDirection);
+				if (dotProduct > -0.5f) {
+					//float reducedDamage = damage * (1.0f - blockDamageReduction);
+					//damageComponent->applyDamage(damageInfo, reducedDamage);
+
+					playShieldHitEffects(hitLocation);
+					return;
+				}
+			}
+
 			damageComponent->applyDamage(damageInfo, damage);
             if (HitReactWidget) {
                 UFunction* pulseFunction = HitReactWidget->FindFunction(FName("PlayVignettePulse"));
@@ -514,10 +563,7 @@ void AdevelopmentCharacter::takeDamage(const UdamageInfo* damageInfo, float dama
             
             }
 		}
-        
 	}
-    
-
 }
 
 
@@ -638,7 +684,7 @@ void AdevelopmentCharacter::meleeAttack() {
 // it also sets a timer for reseting the attack cooldown with respect to the animation
 // cooldown for attacking has also been added to fix a melee bug
 void AdevelopmentCharacter::shouldAnimate(const FInputActionValue& Value) {
-	if (!isAttacking) {
+	if (!isAttacking && !blocking) {
 		float montageTime, attackDelay;
 		if (attackMontage && canMelee) {
 			isAttacking = true;
@@ -858,7 +904,7 @@ UAnimMontage* AdevelopmentCharacter::getRandomPunchAnimation() {
 // then it sets the dash force and it launches the player by a multiple of the dash force with the direction
 // then it sets a timer for ending the dash and reseting the dash cooldown
 void AdevelopmentCharacter::performDash(const FInputActionValue& Value) {
-	if (!canDash || !tryUseStamina(dashStaminaCost) || isCrouching || isDashing) {
+	if (!canDash || !tryUseStamina(dashStaminaCost) || isCrouching || isDashing || blocking) {
 		return;
 	}
 
@@ -935,6 +981,109 @@ void AdevelopmentCharacter::setDamageValue(float damageFloat) {
 
 void AdevelopmentCharacter::setCanBlock(bool shouldAllowBlock) {
 	canBlock = shouldAllowBlock;
+	if (!canBlock && blocking) {
+		stopBlocking(FInputActionValue());
+	}
+}
+
+void AdevelopmentCharacter::setCanSprint(bool shouldAllowSprint) {
+	canSprint = shouldAllowSprint;
+}
+
+
+void AdevelopmentCharacter::startBlocking(const FInputActionValue& Value) {
+	if (isCrouching || isDashing || !canBlock) {
+		return;
+	}
+
+	if (isSprinting) {
+		stopSprinting(FInputActionValue());
+		GetWorld()->GetTimerManager().SetTimerForNextTick([this]() {
+			this->initiateBlocking();
+			});
+		return;
+	}
+	initiateBlocking();
+}
+
+void AdevelopmentCharacter::initiateBlocking() {
+	if (tryUseStamina(blockStaminaDrainRate * 0.5f)) {
+		blocking = true;
+		if (blockMontage) {
+			PlayAnimMontage(blockMontage, 1.0f);
+		}
+
+		GetWorldTimerManager().SetTimer(blockStaminaTH, this, &AdevelopmentCharacter::drainBlockStamina, 0.1f, true);
+
+		if (staminaComponent) {
+			staminaComponent->setStaminaGain(false);
+		}
+		GetCharacterMovement()->MaxWalkSpeed = 250.0f;
+	}
+}
+
+void AdevelopmentCharacter::stopBlocking(const FInputActionValue& Value) {
+	if (blocking) {
+		if (blockMontage) {
+			StopAnimMontage(blockMontage);
+		}
+		GetWorldTimerManager().ClearTimer(blockStaminaTH);
+		if (staminaComponent) {
+			staminaComponent->setStaminaGain(true);
+		}
+
+		GetCharacterMovement()->MaxWalkSpeed = 350.0f;
+		blocking = false;
+	}
+}
+
+void AdevelopmentCharacter::drainBlockStamina() {
+	if (staminaComponent && blocking) {
+		float staminaCost = blockStaminaDrainRate * 0.1f;
+		if (staminaComponent->isStaminaAvailable(staminaCost)) {
+			staminaComponent->takeStamina(staminaCost);
+		} else {
+			stopBlocking(FInputActionValue());
+		}
+	}
+}
+
+bool AdevelopmentCharacter::getIsBlocking() const {
+	return blocking;
+}
+
+void AdevelopmentCharacter::playShieldHitEffects(const FVector& hitLocation) {
+	if (shieldHitMontage) {
+		UAnimInstance* animInstance = GetMesh()->GetAnimInstance();
+		if (animInstance) {
+			animInstance->Montage_Stop(0.1f, blockMontage);
+			//StopAnimMontage(blockMontage);
+
+			float hitMontageLength = PlayAnimMontage(shieldHitMontage, 1.0f);
+			inHitReaction = true;
+			GetWorldTimerManager().SetTimer(
+				timerHandle,
+				[this]() {
+					inHitReaction = false;
+					if (blocking) {
+						PlayAnimMontage(blockMontage, 1.0f);
+					}
+				},
+				hitMontageLength * 0.8f,
+				false
+			);
+		}
+	}
+	if (shieldHitSound) {
+		float randomPitch = FMath::RandRange(0.9f, 1.1f);
+		UGameplayStatics::PlaySoundAtLocation(
+			this,
+			shieldHitSound,
+			hitLocation,
+			1.0f,
+			randomPitch
+		);
+	}
 }
 
 
