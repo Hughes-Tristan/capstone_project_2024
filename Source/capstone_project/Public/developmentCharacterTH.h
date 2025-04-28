@@ -132,6 +132,9 @@ class AdevelopmentCharacter : public ACharacter
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	UInputAction* dashAction;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	UInputAction* blockAction;
+
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// CODE WITHIN THE BLOCK ABOVE IS WRITTEN BY Tristan Hughes
 	// CODE WITHIN THE BLOCK BELOW IS WRITTEN BY Unreal Engine
@@ -182,6 +185,10 @@ public:
 	void shouldCrouch(const FInputActionValue& Value);
 	void startSprinting(const FInputActionValue& Value);
 	void stopSprinting(const FInputActionValue& Value);
+
+	void startBlocking(const FInputActionValue& Value);
+	void stopBlocking(const FInputActionValue& Value);
+
 	void meleeAttack();
 	void setAnimationState(const FInputActionValue& Value);
 	float setSmoothArmLength(float currentLength, float targetLength, float timeDelta);
@@ -253,6 +260,10 @@ public:
 	// dash function
 	UFUNCTION(BlueprintCallable, Category = "Movement")
 	void performDash(const FInputActionValue& Value);
+
+	// block flag
+	UFUNCTION(BlueprintCallable, Category = "Block")
+	bool getIsBlocking() const;
 
 private:
 	// private variables associated with character actions
@@ -430,6 +441,38 @@ private:
 	void resetDashCooldown();
 
 	void playDashEffects();
+
+	// blocking properties
+	UPROPERTY(BlueprintReadWrite, Category = "Block", meta = (AllowPrivateAccess = "true"))
+	bool blocking;
+
+	UPROPERTY(EditAnywhere, Category = "Block", meta = (AllowPrivateAccess = "true"))
+	float blockDamageReduction;
+
+	UPROPERTY(EditAnywhere, Category = "Stamina", meta = (AllowPrivateAccess = "true"))
+	float blockStaminaDrainRate;
+
+	UPROPERTY(EditAnywhere, Category = "Block", meta = (AllowPrivateAccess = "true"))
+	UAnimMontage* blockMontage;
+
+	FTimerHandle blockStaminaTH;
+	void drainBlockStamina();
+
+	//helper
+	void initiateBlocking();
+
+	UPROPERTY(EditAnywhere, Category = "Block", meta = (AllowPrivateAccess = "true"))
+	UAnimMontage* shieldHitMontage;
+
+	UPROPERTY(EditAnywhere, Category = "Audio", meta = (AllowPrivateAccess = "true"))
+	USoundCue* shieldHitSound;
+
+	void playShieldHitEffects(const FVector& hitLocation);
+
+	UPROPERTY(BlueprintReadWrite, Category = "Block", meta = (AllowPrivateAccess = "true"))
+	bool inHitReaction;
+
+	FTimerHandle hitReactionTimerHandle;
 
 };
 
