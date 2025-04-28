@@ -234,6 +234,9 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "DamageFloat")
 	void setDamageValue(float damageFloat);
 
+	UFUNCTION(BlueprintCallable, Category = "BlockFlag")
+	void setCanBlock(bool shouldAllowBlock);
+
 	// punching flag and animations
 	//UPROPERTY(BlueprintReadWrite)
 	//bool canPunch;
@@ -270,6 +273,9 @@ private:
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, meta = (AllowPrivateAccess = "true"))
 	bool canMelee;
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, meta = (AllowPrivateAccess = "true"))
+	bool canBlock;
 
 	void shouldMelee();
 

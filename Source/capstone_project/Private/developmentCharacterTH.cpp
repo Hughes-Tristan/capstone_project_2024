@@ -933,4 +933,8 @@ void AdevelopmentCharacter::setDamageValue(float damageFloat) {
 	damageValue = damageFloat;
 }
 
+void AdevelopmentCharacter::setCanBlock(bool shouldAllowBlock) {
+	canBlock = shouldAllowBlock;
+}
+
 
