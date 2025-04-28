@@ -42,6 +42,8 @@ public:
 
     void shouldAttack();
 
+    void disableAttack();
+
     // fucntion for automatically detecting collisions
     UFUNCTION()
     void OnAttackRangeOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
@@ -98,8 +100,6 @@ protected:
     
     USphereComponent* sphereComponent;
 
-    // damage component object
-    UdamageComponent* damageComponent;
 
 public:	
 	// Called every frame
@@ -107,5 +107,9 @@ public:
 
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+
+    // damage component object
+    UdamageComponent* damageComponent;
+
 
 };
