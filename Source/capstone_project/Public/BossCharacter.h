@@ -9,6 +9,10 @@
 #include "Sound/SoundCue.h"
 #include "Kismet/GameplayStatics.h"
 #include "Camera/CameraShakeBase.h"
+#include "AIController.h"
+#include "BehaviorTree/BehaviorTree.h"
+#include "BehaviorTree/BlackboardComponent.h"
+#include "NavigationSystem.h"
 #include "Components/SphereComponent.h"
 #include "Engine/World.h"
 #include "CoreMinimal.h"
@@ -99,6 +103,17 @@ public:
 
     UFUNCTION()
     void OnAttackRangeOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
+
+    UFUNCTION()
+    void OnAttackRangeOverlapEnd(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
+
+    void disableAttacks();
+
+    UPROPERTY(BlueprintReadWrite, Category = "Damage")
+    UdamageComponent* damageComponent;
+
+    UPROPERTY(EditAnywhere, Category = "Combat")
+    float effectiveAttackRange;
     
 
 protected:
@@ -107,9 +122,6 @@ protected:
     //void HandleHealth();
     
 private:
-    UPROPERTY(BlueprintReadWrite, Category = "Damage", meta = (AllowPrivateAccess = "true"))
-    UdamageComponent* damageComponent;
-    
 
     
     //void UpdateBossHealthBarVisibility();

@@ -640,9 +640,9 @@ void AdevelopmentCharacter::meleeAttack() {
 			if (damageComp && damageComp->isDead) {
 				isDead = true;
 			}
-		} //else if (bossEnemy && bossEnemy->damageComponent && bossEnemy->damageComponent->isDead) {
-			//isDead = true;
-		//}
+		} else if (bossEnemy && bossEnemy->damageComponent && bossEnemy->damageComponent->isDead) {
+			isDead = true;
+		}
 
 
 		if (isDead) {

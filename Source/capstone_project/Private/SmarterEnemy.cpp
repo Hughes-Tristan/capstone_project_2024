@@ -51,7 +51,9 @@ ASmarterEnemy::ASmarterEnemy()
     sphereComponent = CreateDefaultSubobject<USphereComponent>(TEXT("attackSphere"));
     sphereComponent->SetCollisionProfileName(TEXT("collisionOverlap"));
 
-    sphereComponent->SetSphereRadius(100.0f);
+    sphereComponent->SetSphereRadius(200.0f);
+    sphereComponent->OnComponentEndOverlap.AddDynamic(this, &ASmarterEnemy::OnAttackRangeOverlapEnd);
+    effectiveAttackRange = 200.0f;
     sphereComponent->SetGenerateOverlapEvents(true);
     sphereComponent->SetupAttachment(RootComponent);
     sphereComponent->OnComponentBeginOverlap.AddDynamic(this, &ASmarterEnemy::OnAttackRangeOverlapBegin);
@@ -146,6 +148,12 @@ void ASmarterEnemy::OnAttackRangeOverlapBegin(UPrimitiveComponent* OverlappedCom
     }
 }
 
+void ASmarterEnemy::OnAttackRangeOverlapEnd(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex) {
+    if (OtherActor && OtherActor == currentTarget) {
+        currentTarget = nullptr;
+    }
+}
+
 // this function is designed to do damage to an actor
 // if an actor is detected than setup damage info for the attack
 // if the cast to the development character is successful it will do damage to the main player
@@ -211,34 +219,43 @@ void ASmarterEnemy::shouldAttack() {
 // it then resets the canAttack flag on a timer
 void ASmarterEnemy::onAttackHit(float damage) {
     //UE_LOG(LogTemp, Warning, TEXT("OnAttackHit called on %s!"), *GetName());
+
     if (currentTarget && canAttack)
     {
-        doDamage(currentTarget, damage);
-        canAttack = false;
-        if (attackHitSound)
-        {
-            UGameplayStatics::PlaySoundAtLocation(
-                this,
-                attackHitSound,
-                currentTarget->GetActorLocation(),
-                1.0f,
-                FMath::RandRange(minPitch, maxPitch)
-            );
-        }
-        if (attackCameraShake)
-        {
-            AdevelopmentCharacter* playerChararacter = Cast<AdevelopmentCharacter>(currentTarget);
-            if (playerChararacter)
+        float distanceToTarget = FVector::Dist(GetActorLocation(), currentTarget->GetActorLocation());
+        if (distanceToTarget <= effectiveAttackRange) {
+            doDamage(currentTarget, damage);
+            canAttack = false;
+            if (attackHitSound)
             {
-                APlayerController* playerController = Cast<APlayerController>(playerChararacter->GetController());
-                if (playerController)
+                UGameplayStatics::PlaySoundAtLocation(
+                    this,
+                    attackHitSound,
+                    currentTarget->GetActorLocation(),
+                    1.0f,
+                    FMath::RandRange(minPitch, maxPitch)
+                );
+            }
+            if (attackCameraShake)
+            {
+                AdevelopmentCharacter* playerChararacter = Cast<AdevelopmentCharacter>(currentTarget);
+                if (playerChararacter)
                 {
-                    playerController->ClientStartCameraShake(attackCameraShake, 1.0f);
+                    APlayerController* playerController = Cast<APlayerController>(playerChararacter->GetController());
+                    if (playerController)
+                    {
+                        playerController->ClientStartCameraShake(attackCameraShake, 1.0f);
+                    }
                 }
             }
+
+            GetWorld()->GetTimerManager().SetTimer(timerHandle, this, &ASmarterEnemy::shouldAttack, cooldownTime, false);
+        } else {
+            currentTarget = nullptr;
+
+            GetWorld()->GetTimerManager().SetTimer(timerHandle, this, &ASmarterEnemy::shouldAttack, cooldownTime, false);
         }
         
-        GetWorld()->GetTimerManager().SetTimer(timerHandle, this, &ASmarterEnemy::shouldAttack, cooldownTime, false);
     }
 
 }

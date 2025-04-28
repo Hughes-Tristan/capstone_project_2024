@@ -26,10 +26,13 @@ ABossCharacter::ABossCharacter()
     attackSphere = CreateDefaultSubobject<USphereComponent>(TEXT("attackSphere"));
     attackSphere->SetCollisionProfileName(TEXT("collisionOverlap"));
 
-    attackSphere->SetSphereRadius(150.0f);
+    attackSphere->SetSphereRadius(3000.0f);
+    effectiveAttackRange = 350.0f;
+
     attackSphere->SetGenerateOverlapEvents(true);
     attackSphere->SetupAttachment(RootComponent);
     attackSphere->OnComponentBeginOverlap.AddDynamic(this, &ABossCharacter::OnAttackRangeOverlapBegin);
+    attackSphere->OnComponentEndOverlap.AddDynamic(this, &ABossCharacter::OnAttackRangeOverlapEnd);
 }
 
 // Called when the game starts or when spawned
@@ -106,6 +109,10 @@ void ABossCharacter::takeDamage(const UdamageInfo* damageInfo, float damage) {
             damageComponent->applyDamage(damageInfo, damage);
             
             PlayHitReactMontage();
+            if (damageComponent->isDead) {
+                disableAttacks();
+                SetLifeSpan(10.0f);
+            }
         }
     }
 }
@@ -141,30 +148,39 @@ void ABossCharacter::onSound(USoundCue* sound) {
 
 void ABossCharacter::onAttackHit(float damage) {
     UE_LOG(LogTemp, Warning, TEXT("OnAttackHit called on %s!"), *GetName());
+
+    if (damageComponent && damageComponent->isDead) {
+        return;
+    }
     if (currentTarget && canAttack)
     {
-        doDamage(currentTarget, damage);
-        if (attackHitSound)
-        {
-            UGameplayStatics::PlaySoundAtLocation(
-                this,
-                attackHitSound,
-                currentTarget->GetActorLocation(),
-                1.0f,
-                FMath::RandRange(minPitch, maxPitch)
-            );
-        }
-        if (attackCameraShake)
-        {
-            AdevelopmentCharacter* playerChararacter = Cast<AdevelopmentCharacter>(currentTarget);
-            if (playerChararacter)
+        float distanceToTarget = FVector::Dist(GetActorLocation(), currentTarget->GetActorLocation());
+        if (distanceToTarget <= effectiveAttackRange) {
+            doDamage(currentTarget, damage);
+            if (attackHitSound)
             {
-                APlayerController* playerController = Cast<APlayerController>(playerChararacter->GetController());
-                if (playerController)
+                UGameplayStatics::PlaySoundAtLocation(
+                    this,
+                    attackHitSound,
+                    currentTarget->GetActorLocation(),
+                    1.0f,
+                    FMath::RandRange(minPitch, maxPitch)
+                );
+            }
+            if (attackCameraShake)
+            {
+                AdevelopmentCharacter* playerChararacter = Cast<AdevelopmentCharacter>(currentTarget);
+                if (playerChararacter)
                 {
-                    playerController->ClientStartCameraShake(attackCameraShake, 10.0f);
+                    APlayerController* playerController = Cast<APlayerController>(playerChararacter->GetController());
+                    if (playerController)
+                    {
+                        playerController->ClientStartCameraShake(attackCameraShake, 10.0f);
+                    }
                 }
             }
+        } else {
+            currentTarget = nullptr;
         }
     }
 }
@@ -178,6 +194,12 @@ void ABossCharacter::OnAttackRangeOverlapBegin(UPrimitiveComponent* OverlappedCo
         {
             currentTarget = mainCharacter;
         }
+    }
+}
+
+void ABossCharacter::OnAttackRangeOverlapEnd(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex) {
+    if (OtherActor && OtherActor == currentTarget) {
+        currentTarget = nullptr;
     }
 }
 
@@ -203,6 +225,32 @@ void ABossCharacter::PlayHitReactMontage()
             AnimInstance->Montage_Play(HitreactMontage, 2.0f, EMontagePlayReturnType::MontageLength, 0.0f, false);
         }
     }
+}
+
+void ABossCharacter::disableAttacks() {
+    if (attackSphere) {
+        attackSphere->SetGenerateOverlapEvents(false);
+        attackSphere->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+    }
+    currentTarget = nullptr;
+    canAttack = false;
+
+    AAIController* aiController = Cast<AAIController>(GetController());
+    if (aiController) {
+        UBehaviorTreeComponent* behaviorTreeComponent = aiController->FindComponentByClass<UBehaviorTreeComponent>();
+        if (behaviorTreeComponent) {
+            behaviorTreeComponent->StopTree();
+        }
+        UBlackboardComponent* blackboardComp = aiController->GetBlackboardComponent();
+        if (blackboardComp) {
+            blackboardComp->ClearValue("TargetActor");
+            blackboardComp->ClearValue("PlayerLocation");
+            blackboardComp->ClearValue("CanAttackPlayer");
+        }
+        aiController->UnPossess();
+    }
+
+    GetWorldTimerManager().ClearTimer(timerHandle);
 }
 
 
