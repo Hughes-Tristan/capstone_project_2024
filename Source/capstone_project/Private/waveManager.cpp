@@ -33,8 +33,8 @@ AwaveManager::AwaveManager()
 	enemyCount = 0;
 	//deathTotal 
 	waveNumber = 1;
-	minEnemies = 5;
-	maxEnemies = 10;
+	minEnemies = 2;
+	maxEnemies = 5;
 	timeToSpawn = 0.5f;
 }
 

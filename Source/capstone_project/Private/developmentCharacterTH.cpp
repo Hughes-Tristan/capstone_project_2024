@@ -580,13 +580,36 @@ void AdevelopmentCharacter::meleeAttack() {
 	for (int32 i = storedHits.Num() - 1; i >= 0; --i) {
 		const FOverlapResult& overlapResult = storedHits[i];
 		AActor* enemy = overlapResult.GetActor();
+
+		// this block of code was added to fix the bug where you could clear the wave by spam clicking
+		// it basically just skips the loop if whatever you are hitting is not an enemy
+		ASmarterEnemy* smarterEnemy = Cast<ASmarterEnemy>(enemy);
+		Aenemycharacter1* basicEnemy = Cast<Aenemycharacter1>(enemy);
+		ABossCharacter* bossEnemy = Cast<ABossCharacter>(enemy);
+		bool isDead = false;
+		if (smarterEnemy && smarterEnemy->damageComponent && smarterEnemy->damageComponent->isDead) {
+			isDead = true;
+		} else if (basicEnemy) {
+			UdamageComponent* damageComp = Cast<UdamageComponent>(basicEnemy->GetComponentByClass<UdamageComponent>());
+			if (damageComp && damageComp->isDead) {
+				isDead = true;
+			}
+		} //else if (bossEnemy && bossEnemy->damageComponent && bossEnemy->damageComponent->isDead) {
+			//isDead = true;
+		//}
+
+
+		if (isDead) {
+			continue; 
+		}
+
 		if (enemy && enemy != this) {
 
 			if (!actorOverlap.Contains(enemy)) {
 
 				actorOverlap.Add(enemy);
 				if (canMelee) {
-					damageValue = 65;
+					//damageValue = 65;
 					doDamage(enemy, damageValue);
 
 					hitEnemy = true;
@@ -594,7 +617,7 @@ void AdevelopmentCharacter::meleeAttack() {
 					playHitEffect(hitLocation, meleeHitSound, meleeHitParticle, 1.0f, 0.6f, 1.4f);
 				}
 				else {
-					damageValue = 20;
+					//damageValue = 20;
 					doDamage(enemy, damageValue);
 
 					hitEnemy = true;
@@ -608,8 +631,6 @@ void AdevelopmentCharacter::meleeAttack() {
 		}
 	}
 }
-
-
 
 
 // this function is used to trigger an animation for the attacking control
@@ -907,4 +928,9 @@ void AdevelopmentCharacter::playDashEffects() {
 		playerController->ClientStartCameraShake(dashCameraShake, 0.5f);
 	}
 }
+
+void AdevelopmentCharacter::setDamageValue(float damageFloat) {
+	damageValue = damageFloat;
+}
+
 
