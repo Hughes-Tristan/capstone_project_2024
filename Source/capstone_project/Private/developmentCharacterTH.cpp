@@ -937,4 +937,8 @@ void AdevelopmentCharacter::setCanBlock(bool shouldAllowBlock) {
 	canBlock = shouldAllowBlock;
 }
 
+void AdevelopmentCharacter::setCanSprint(bool shouldAllowSprint) {
+	canSprint = shouldAllowSprint;
+}
+
 

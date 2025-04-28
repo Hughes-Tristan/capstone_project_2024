@@ -237,6 +237,9 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "BlockFlag")
 	void setCanBlock(bool shouldAllowBlock);
 
+	UFUNCTION(BlueprintCallable, Category = "SprintFlag")
+	void setCanSprint(bool shouldAllowSprint);
+
 	// punching flag and animations
 	//UPROPERTY(BlueprintReadWrite)
 	//bool canPunch;
@@ -276,6 +279,9 @@ private:
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, meta = (AllowPrivateAccess = "true"))
 	bool canBlock;
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, meta = (AllowPrivateAccess = "true"))
+	bool canSprint;
 
 	void shouldMelee();
 
