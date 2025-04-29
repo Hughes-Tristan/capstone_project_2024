@@ -70,11 +70,12 @@ void AwaveManager::Tick(float DeltaTime)
 void AwaveManager::startWave() {
 	isBossRound = (waveNumber % bossRoundInterval == 0);
 	if (isBossRound) {
-		total = 1;
-		enemyCount = 0;
-		deathTotal = 0;
-		UE_LOG(LogTemp, Warning, TEXT("BOSS WAVE: %d"), waveNumber);
-
+        total = FMath::RandRange(minEnemies, maxEnemies) + 1;
+        enemyCount = 0;
+        deathTotal = 0;
+        UE_LOG(LogTemp, Warning, TEXT("wave: %d   total enemies spawning: %d"), waveNumber, total);
+        timeToSpawn = FMath::Max(0.5f - (waveNumber * 0.02f), 0.1f);
+        GetWorldTimerManager().SetTimer(timerHandle, this, &AwaveManager::spawnBP, timeToSpawn, true);
 		spawnBoss();
 	}
 	else {
@@ -197,18 +198,9 @@ void AwaveManager::prepareNextWave() {
 	startWave();
 }
 
+// this function is used to spawn the boss character
+// it chooses a random spawn point, spawns the boss, and sets up the ai controller
 void AwaveManager::spawnBoss() {
-    if (!bossBlueprint) {
-        UE_LOG(LogTemp, Error, TEXT("No boss blueprint assigned!"));
-        return;
-    }
-
-    if (spawnPoints.Num() == 0) {
-        UE_LOG(LogTemp, Error, TEXT("No spawn points defined!"));
-        return;
-    }
-
-    // Choose a random spawn point
     int i = FMath::RandRange(0, spawnPoints.Num() - 1);
     AActor* spawnPoint = spawnPoints[i];
 
@@ -217,14 +209,14 @@ void AwaveManager::spawnBoss() {
     FActorSpawnParameters spawnParameters;
     spawnParameters.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 
-    // Spawn the boss
+
     ABossCharacter* bossSpawned = GetWorld()->SpawnActor<ABossCharacter>(bossBlueprint, spawnLocation, spawnRotation, spawnParameters);
 
     if (bossSpawned) {
         enemies.Add(bossSpawned);
         enemyCount++;
 
-        // Set up AI controller for the boss - Same process as for regular enemies
+
         UClass* blueprintClass = bossSpawned->GetClass();
         UClass* aiControllerClass = nullptr;
 
@@ -241,20 +233,10 @@ void AwaveManager::spawnBoss() {
             if (aiController) {
                 if (bossSpawned->GetController()) {
                     bossSpawned->GetController()->UnPossess();
-                    UE_LOG(LogTemp, Warning, TEXT("Boss unpossessed"));
                 }
                 aiController->Possess(bossSpawned);
-                UE_LOG(LogTemp, Warning, TEXT("Boss successfully possessed by AI controller"));
             }
         }
-        else {
-            UE_LOG(LogTemp, Error, TEXT("Could not find AI controller class for boss!"));
-        }
-
-        UE_LOG(LogTemp, Warning, TEXT("Boss spawned successfully"));
-    }
-    else {
-        UE_LOG(LogTemp, Error, TEXT("Failed to spawn boss!"));
     }
 }
 

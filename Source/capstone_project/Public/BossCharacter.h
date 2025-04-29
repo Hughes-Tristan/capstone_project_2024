@@ -19,6 +19,8 @@
 #include "GameFramework/Character.h"
 #include "BossCharacter.generated.h"
 
+class AwaveManager;
+
 UCLASS(Blueprintable)
 class CAPSTONE_PROJECT_API ABossCharacter : public ACharacter
 {
@@ -114,6 +116,14 @@ public:
 
     UPROPERTY(EditAnywhere, Category = "Combat")
     float effectiveAttackRange;
+
+    void destroy();
+
+    UPROPERTY()
+    AwaveManager* waveManager;
+
+    UPROPERTY(BlueprintReadOnly, Category = "damage")
+    AActor* lastAttacker;
     
 
 protected:

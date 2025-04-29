@@ -612,14 +612,20 @@ void AdevelopmentCharacter::meleeAttack() {
 	TSet<AActor*> actorOverlap;
 	FCollisionQueryParams queryParams;
 	FVector charPos;// forwardVector, centerOfSphere;
-	float hitRadius;
+	FVector forwardVector;
+	float attackRange;
+	float attackAngle;
 
-	hitRadius = meleeDamageRange;
+	//hitRadius = meleeDamageRange;
 	charPos = GetActorLocation();
+	forwardVector = GetActorForwardVector();
 	queryParams.AddIgnoredActor(this);
 
+	attackRange = meleeDamageRange;
+	attackAngle = 110.0f;
 
-	GetWorld()->OverlapMultiByChannel(storedHits, charPos, FQuat::Identity, ECC_Pawn, FCollisionShape::MakeSphere(hitRadius), queryParams);
+
+	GetWorld()->OverlapMultiByChannel(storedHits, charPos, FQuat::Identity, ECC_Pawn, FCollisionShape::MakeSphere(attackRange), queryParams);
 
 	bool hitEnemy = false;
 	FVector hitLocation = charPos;
@@ -650,30 +656,38 @@ void AdevelopmentCharacter::meleeAttack() {
 			continue; 
 		}
 
-		if (enemy && enemy != this) {
+		FVector directionToEnemy = enemy->GetActorLocation() - charPos;
+		directionToEnemy.Normalize();
 
-			if (!actorOverlap.Contains(enemy)) {
+		float dotProduct = FVector::DotProduct(forwardVector, directionToEnemy);
+		float angleRadians = FMath::Acos(dotProduct);
+		float angleDegrees = FMath::RadiansToDegrees(angleRadians);
+		if (angleDegrees <= attackAngle / 2.0f) {
+			if (enemy && enemy != this) {
 
-				actorOverlap.Add(enemy);
-				if (canMelee) {
-					//damageValue = 65;
-					doDamage(enemy, damageValue);
+				if (!actorOverlap.Contains(enemy)) {
 
-					hitEnemy = true;
-					hitLocation = enemy->GetActorLocation();
-					playHitEffect(hitLocation, meleeHitSound, meleeHitParticle, 1.0f, 0.6f, 1.4f);
+					actorOverlap.Add(enemy);
+					if (canMelee) {
+						//damageValue = 65;
+						doDamage(enemy, damageValue);
+
+						hitEnemy = true;
+						hitLocation = enemy->GetActorLocation();
+						playHitEffect(hitLocation, meleeHitSound, meleeHitParticle, 1.0f, 0.6f, 1.4f);
+					}
+					else {
+						damageValue = 20;
+						doDamage(enemy, damageValue);
+
+						hitEnemy = true;
+						hitLocation = enemy->GetActorLocation();
+						playHitEffect(hitLocation, punchHitSound, punchHitParticle, 0.75f, .8f, 1.1f);
+					}
+
+					FColor sphereColor = storedHits.Num() > 0 ? FColor::Red : FColor::Green;
+					DrawDebugSphere(GetWorld(), charPos, attackRange, 12, FColor::Green, false, 1.0, 0, 1.0);
 				}
-				else {
-					damageValue = 20;
-					doDamage(enemy, damageValue);
-
-					hitEnemy = true;
-					hitLocation = enemy->GetActorLocation();
-					playHitEffect(hitLocation, punchHitSound, punchHitParticle, 0.75f, .8f, 1.1f);
-				}
-
-				FColor sphereColor = storedHits.Num() > 0 ? FColor::Red : FColor::Green;
-				DrawDebugSphere(GetWorld(), charPos, hitRadius, 12, FColor::Green, false, 1.0, 0, 1.0);
 			}
 		}
 	}

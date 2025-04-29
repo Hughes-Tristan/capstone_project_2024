@@ -2,6 +2,7 @@
 
 
 #include "BossCharacter.h"
+#include "waveManager.h"
 #include "developmentCharacterTH.h"
 #include "Components/SphereComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
@@ -27,12 +28,14 @@ ABossCharacter::ABossCharacter()
     attackSphere->SetCollisionProfileName(TEXT("collisionOverlap"));
 
     attackSphere->SetSphereRadius(150.0f);
-    effectiveAttackRange = 350.0f;
+    effectiveAttackRange = 450.0f;
 
     attackSphere->SetGenerateOverlapEvents(true);
     attackSphere->SetupAttachment(RootComponent);
     attackSphere->OnComponentBeginOverlap.AddDynamic(this, &ABossCharacter::OnAttackRangeOverlapBegin);
     attackSphere->OnComponentEndOverlap.AddDynamic(this, &ABossCharacter::OnAttackRangeOverlapEnd);
+
+    waveManager = Cast<AwaveManager>(UGameplayStatics::GetActorOfClass(GetWorld(), AwaveManager::StaticClass()));
 }
 
 // Called when the game starts or when spawned
@@ -107,11 +110,11 @@ void ABossCharacter::takeDamage(const UdamageInfo* damageInfo, float damage) {
     if (damageInfo) {
         if (damageComponent) {
             damageComponent->applyDamage(damageInfo, damage);
-            
+            lastAttacker = damageInfo->attackingActor;
             PlayHitReactMontage();
             if (damageComponent->isDead) {
                 disableAttacks();
-                SetLifeSpan(10.0f);
+                destroy();
             }
         }
     }
@@ -265,6 +268,15 @@ void ABossCharacter::disableAttacks() {
     GetWorldTimerManager().ClearTimer(timerHandle);
 }
 
+void ABossCharacter::destroy() {
+    AdevelopmentCharacter* player = Cast<AdevelopmentCharacter>(lastAttacker);
+    if (player && waveManager) {
+        if (waveManager->IsValidLowLevel()) {
+            waveManager->enemyDeath();
+        }
+    }
+    SetLifeSpan(10.0f);
+}
 
 /*float ABossCharacter::getHealth() const
 {

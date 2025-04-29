@@ -277,7 +277,7 @@ private:
 	bool isSprinting;
 
 	UPROPERTY(BlueprintReadWrite, Category = "Melee", meta = (AllowPrivateAccess = "true"))
-	float meleeDamageRange = 70.0f;
+	float meleeDamageRange = 55.0f;
 
 	UPROPERTY(BlueprintReadWrite, Category = "Damage", meta = (AllowPrivateAccess = "true"))
 	UdamageComponent* damageComponent;
