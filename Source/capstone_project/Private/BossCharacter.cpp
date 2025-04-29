@@ -152,8 +152,20 @@ void ABossCharacter::onAttackHit(float damage) {
     if (damageComponent && damageComponent->isDead) {
         return;
     }
+
+    AdevelopmentCharacter* playerCharacter = Cast<AdevelopmentCharacter>(currentTarget);
+    if (playerCharacter && playerCharacter->isDead()) {
+        currentTarget = nullptr;
+        return;
+    }
+
+    if (!currentTarget || !canAttack) {
+        return;
+    }
+
     if (currentTarget && canAttack)
     {
+        FVector targetLocation = currentTarget->GetActorLocation();
         float distanceToTarget = FVector::Dist(GetActorLocation(), currentTarget->GetActorLocation());
         if (distanceToTarget <= effectiveAttackRange) {
             doDamage(currentTarget, damage);
@@ -162,7 +174,7 @@ void ABossCharacter::onAttackHit(float damage) {
                 UGameplayStatics::PlaySoundAtLocation(
                     this,
                     attackHitSound,
-                    currentTarget->GetActorLocation(),
+                    targetLocation,
                     1.0f,
                     FMath::RandRange(minPitch, maxPitch)
                 );

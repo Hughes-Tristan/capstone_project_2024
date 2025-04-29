@@ -187,7 +187,7 @@ void ASmarterEnemy::destroy() {
     if (animInstance) {
         animInstance->StopAllMontages(0.1f);
     }
-    disableAttack();
+    //disableAttack();
     AdevelopmentCharacter* player = Cast<AdevelopmentCharacter>(lastAttacker);
     if (player && waveManager) {
         if (waveManager->IsValidLowLevel()) {
@@ -220,8 +220,23 @@ void ASmarterEnemy::shouldAttack() {
 void ASmarterEnemy::onAttackHit(float damage) {
     //UE_LOG(LogTemp, Warning, TEXT("OnAttackHit called on %s!"), *GetName());
 
+    if (damageComponent && damageComponent->isDead) {
+        return;
+    }
+
+    AdevelopmentCharacter* playerCharacter = Cast<AdevelopmentCharacter>(currentTarget);
+    if (playerCharacter && playerCharacter->isDead()) {
+        currentTarget = nullptr;
+        return;
+    }
+    
+    if (!currentTarget || !canAttack) {
+        return;
+    }
+
     if (currentTarget && canAttack)
     {
+        FVector targetLocation = currentTarget->GetActorLocation();
         float distanceToTarget = FVector::Dist(GetActorLocation(), currentTarget->GetActorLocation());
         if (distanceToTarget <= effectiveAttackRange) {
             doDamage(currentTarget, damage);
@@ -231,7 +246,7 @@ void ASmarterEnemy::onAttackHit(float damage) {
                 UGameplayStatics::PlaySoundAtLocation(
                     this,
                     attackHitSound,
-                    currentTarget->GetActorLocation(),
+                    targetLocation,
                     1.0f,
                     FMath::RandRange(minPitch, maxPitch)
                 );
