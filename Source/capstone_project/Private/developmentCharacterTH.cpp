@@ -367,6 +367,7 @@ void AdevelopmentCharacter::Tick(float time) {
 
 	if (isDead()) {
 		shouldDisableInput();
+		return;
 	}
 	
 	if (staminaBarWidget && staminaComponent && staminaBarWidget->staminaBar) {

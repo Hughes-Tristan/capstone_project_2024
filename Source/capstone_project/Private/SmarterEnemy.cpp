@@ -194,7 +194,7 @@ void ASmarterEnemy::destroy() {
             waveManager->enemyDeath();
         }
     }
-    SetLifeSpan(10.0);
+    SetLifeSpan(1.3);
     if (spawnBP) {
         if (FMath::RandRange(0, 1) <= spawnPercent) {
             FActorSpawnParameters spawnParameters;

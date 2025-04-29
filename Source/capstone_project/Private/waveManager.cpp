@@ -36,6 +36,17 @@ AwaveManager::AwaveManager()
 	minEnemies = 2;
 	maxEnemies = 5;
 	timeToSpawn = 0.5f;
+
+	//maxEnemiesAtOnce = 8;
+	maxEnemiesTotal = 30;
+	difficultyCurve = 1.4f;
+	//countScaling = 1.2f;
+	waveCooldownTime = 5.0f;
+	enemyCleanupDelay = 3.0f;
+
+
+	bossRoundInterval = 5;
+	isBossRound = false;
 }
 
 // Called when the game starts or when spawned
@@ -49,6 +60,7 @@ void AwaveManager::BeginPlay()
 void AwaveManager::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+	//spawnBP();
 
 }
 
@@ -56,11 +68,23 @@ void AwaveManager::Tick(float DeltaTime)
 // assigns a number of enemies to spawn based of a given range
 // starts a timer to spawn new enemies based on an interval
 void AwaveManager::startWave() {
-	total = FMath::RandRange(minEnemies, maxEnemies);
-	enemyCount = 0;
-	deathTotal = 0;
-	UE_LOG(LogTemp, Warning, TEXT("wave: %d   total enemies spawning: %d"), waveNumber, total);
-	GetWorldTimerManager().SetTimer(timerHandle, this, &AwaveManager::spawnBP, timeToSpawn, true);
+	isBossRound = (waveNumber % bossRoundInterval == 0);
+	if (isBossRound) {
+		total = 1;
+		enemyCount = 0;
+		deathTotal = 0;
+		UE_LOG(LogTemp, Warning, TEXT("BOSS WAVE: %d"), waveNumber);
+
+		spawnBoss();
+	}
+	else {
+		total = FMath::RandRange(minEnemies, maxEnemies);
+		enemyCount = 0;
+		deathTotal = 0;
+		UE_LOG(LogTemp, Warning, TEXT("wave: %d   total enemies spawning: %d"), waveNumber, total);
+		timeToSpawn = FMath::Max(0.5f - (waveNumber * 0.02f), 0.1f);
+		GetWorldTimerManager().SetTimer(timerHandle, this, &AwaveManager::spawnBP, timeToSpawn, true);
+	}
 }
 
 // this function is designed to spawn the enemy blueprint
@@ -72,6 +96,7 @@ void AwaveManager::startWave() {
 // then find the valid ai controller class from the blueprint defaults
 // if we find a valid controller then spawn it
 void AwaveManager::spawnBP() {
+	
 	if (total <= enemyCount) {
 		GetWorldTimerManager().ClearTimer(timerHandle);
 		return;
@@ -132,8 +157,9 @@ void AwaveManager::spawnBP() {
 // then end the wave
 void AwaveManager::enemyDeath() {
 	deathTotal++;
+
 	if (total <= deathTotal) {
-		endWave();
+		GetWorldTimerManager().SetTimer(cleanupTimerHandle, this, &AwaveManager::endWave, enemyCleanupDelay, false);
 	}
 }
 
@@ -141,17 +167,94 @@ void AwaveManager::enemyDeath() {
 // once this is called it will destroy all the enemies, empty the list for new wave
 // it will thenincrease the wave number and range numbers before starting a new wave
 void AwaveManager::endWave() {
+	int destroyedCount = 0;
 	for (int i = 0; i < enemies.Num(); ++i) {
 		AActor* enemy = enemies[i];
 		if (enemy) {
 			enemy->Destroy();
+			destroyedCount++;
 		}
 	}
 	enemies.Empty();
-
-	minEnemies += 5;
-	maxEnemies += 5;
-	waveNumber++;
-
-		startWave();
+	GetWorldTimerManager().SetTimer(betweenWavesTimer, this, &AwaveManager::prepareNextWave, waveCooldownTime, false);
 }
+
+void AwaveManager::prepareNextWave() {
+	//float difficultyMultiplier = FMath::Pow(waveNumber, 1.0f / difficultyCurve);
+
+	int oldMinEnemies = minEnemies;
+	int oldMaxEnemies = maxEnemies;
+
+	minEnemies = FMath::Min(minEnemies + 1, maxEnemiesTotal);
+	maxEnemies = FMath::Min(maxEnemies + 2, maxEnemiesTotal);
+
+	if (minEnemies > maxEnemies) {
+		minEnemies = maxEnemies;
+	}
+
+	waveNumber++;
+	//UpdateWaveCounterUI();
+	startWave();
+}
+
+void AwaveManager::spawnBoss() {
+    if (!bossBlueprint) {
+        UE_LOG(LogTemp, Error, TEXT("No boss blueprint assigned!"));
+        return;
+    }
+
+    if (spawnPoints.Num() == 0) {
+        UE_LOG(LogTemp, Error, TEXT("No spawn points defined!"));
+        return;
+    }
+
+    // Choose a random spawn point
+    int i = FMath::RandRange(0, spawnPoints.Num() - 1);
+    AActor* spawnPoint = spawnPoints[i];
+
+    FRotator spawnRotation = spawnPoint->GetActorRotation();
+    FVector spawnLocation = spawnPoint->GetActorLocation();
+    FActorSpawnParameters spawnParameters;
+    spawnParameters.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+
+    // Spawn the boss
+    ABossCharacter* bossSpawned = GetWorld()->SpawnActor<ABossCharacter>(bossBlueprint, spawnLocation, spawnRotation, spawnParameters);
+
+    if (bossSpawned) {
+        enemies.Add(bossSpawned);
+        enemyCount++;
+
+        // Set up AI controller for the boss - Same process as for regular enemies
+        UClass* blueprintClass = bossSpawned->GetClass();
+        UClass* aiControllerClass = nullptr;
+
+        for (TFieldIterator<FObjectProperty> PropIt(blueprintClass); PropIt; ++PropIt) {
+            FObjectProperty* Property = *PropIt;
+            if (Property->GetName() == "AIControllerClass") {
+                aiControllerClass = Cast<UClass>(Property->GetObjectPropertyValue_InContainer(blueprintClass->GetDefaultObject()));
+                break;
+            }
+        }
+
+        if (aiControllerClass) {
+            AAIController* aiController = GetWorld()->SpawnActor<AAIController>(aiControllerClass);
+            if (aiController) {
+                if (bossSpawned->GetController()) {
+                    bossSpawned->GetController()->UnPossess();
+                    UE_LOG(LogTemp, Warning, TEXT("Boss unpossessed"));
+                }
+                aiController->Possess(bossSpawned);
+                UE_LOG(LogTemp, Warning, TEXT("Boss successfully possessed by AI controller"));
+            }
+        }
+        else {
+            UE_LOG(LogTemp, Error, TEXT("Could not find AI controller class for boss!"));
+        }
+
+        UE_LOG(LogTemp, Warning, TEXT("Boss spawned successfully"));
+    }
+    else {
+        UE_LOG(LogTemp, Error, TEXT("Failed to spawn boss!"));
+    }
+}
+

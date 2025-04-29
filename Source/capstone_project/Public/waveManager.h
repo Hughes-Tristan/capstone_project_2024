@@ -25,6 +25,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include "SmarterEnemy.h"
+#include "BossCharacter.h"
 #include "waveManager.generated.h"
 
 // this class is designed for managing the wave system
@@ -74,5 +75,36 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Wave Settings")
 	float timeToSpawn;
 
+	UPROPERTY(EditAnywhere, Category = "Wave Settings")
+	int maxEnemiesAtOnce;
+
+	UPROPERTY(EditAnywhere, Category = "Wave Settings")
+	float countScaling;
+
+	UPROPERTY(EditAnywhere, Category = "Wave Settings")
+	int maxEnemiesTotal;
+
+	UPROPERTY(EditAnywhere, Category = "Wave Settings")
+	float difficultyCurve;
+
+
+	FTimerHandle betweenWavesTimer;
+	float waveCooldownTime;
+
+	FTimerHandle cleanupTimerHandle;
+	float enemyCleanupDelay;
+
+	void prepareNextWave();
+
+	UPROPERTY(EditAnywhere, Category = "Boss Settings")
+	TSubclassOf<ABossCharacter> bossBlueprint;
+
+	UPROPERTY(EditAnywhere, Category = "Boss Settings")
+	int bossRoundInterval;
+
+	UPROPERTY(VisibleAnywhere, Category = "Boss Settings")
+	bool isBossRound;
+
+	void spawnBoss();
 
 };
