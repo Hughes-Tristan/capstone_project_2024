@@ -12,7 +12,7 @@
 *
 *   LICENSE: Personal Use
 *
-*   Copyright © 2025 Tristan Hughes and 2025 UNR Capstone Team 10. All Rights Reserved.
+*   Copyright ï¿½ 2025 Tristan Hughes and 2025 UNR Capstone Team 10. All Rights Reserved.
 *
 *   Unauthorized copying of this file, via any medium is strictly prohibited
 *   This project is personal and confidential unless stated otherwise.
@@ -87,7 +87,14 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Wave Settings")
 	float difficultyCurve;
 
+//Wave Widget HUD
+    UPROPERTY(EditAnywhere, Category = "UI")
+    TSubclassOf<class UUserWidget> WaveWidgetClass;
 
+    UUserWidget* WaveWidgetInstance;
+
+    UPROPERTY()
+    class UTextBlock* WaveText;
 	FTimerHandle betweenWavesTimer;
 	float waveCooldownTime;
 
