@@ -70,12 +70,9 @@ void AwaveManager::Tick(float DeltaTime)
 void AwaveManager::startWave() {
 	isBossRound = (waveNumber % bossRoundInterval == 0);
 	if (isBossRound) {
-        total = FMath::RandRange(minEnemies, maxEnemies) + 1;
+        total = 1;
         enemyCount = 0;
         deathTotal = 0;
-        UE_LOG(LogTemp, Warning, TEXT("wave: %d   total enemies spawning: %d"), waveNumber, total);
-        timeToSpawn = FMath::Max(0.5f - (waveNumber * 0.02f), 0.1f);
-        GetWorldTimerManager().SetTimer(timerHandle, this, &AwaveManager::spawnBP, timeToSpawn, true);
 		spawnBoss();
 	}
 	else {

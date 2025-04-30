@@ -28,7 +28,7 @@ ABossCharacter::ABossCharacter()
     attackSphere->SetCollisionProfileName(TEXT("collisionOverlap"));
 
     attackSphere->SetSphereRadius(150.0f);
-    effectiveAttackRange = 450.0f;
+    effectiveAttackRange = 500.0f;
 
     attackSphere->SetGenerateOverlapEvents(true);
     attackSphere->SetupAttachment(RootComponent);

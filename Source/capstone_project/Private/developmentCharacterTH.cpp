@@ -679,7 +679,7 @@ void AdevelopmentCharacter::meleeAttack() {
 						playHitEffect(hitLocation, meleeHitSound, meleeHitParticle, 1.0f, 0.6f, 1.4f);
 					}
 					else {
-						damageValue = 20;
+						damageValue = 10;
 						doDamage(enemy, damageValue);
 
 						hitEnemy = true;
@@ -687,8 +687,8 @@ void AdevelopmentCharacter::meleeAttack() {
 						playHitEffect(hitLocation, punchHitSound, punchHitParticle, 0.75f, .8f, 1.1f);
 					}
 
-					FColor sphereColor = storedHits.Num() > 0 ? FColor::Red : FColor::Green;
-					DrawDebugSphere(GetWorld(), charPos, attackRange, 12, FColor::Green, false, 1.0, 0, 1.0);
+					//FColor sphereColor = storedHits.Num() > 0 ? FColor::Red : FColor::Green;
+					//DrawDebugSphere(GetWorld(), charPos, attackRange, 12, FColor::Green, false, 1.0, 0, 1.0);
 				}
 			}
 		}
