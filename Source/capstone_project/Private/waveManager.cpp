@@ -12,7 +12,7 @@
 *
 *   LICENSE: Personal Use
 *
-*   Copyright © 2025 Tristan Hughes and 2025 UNR Capstone Team 10. All Rights Reserved.
+*   Copyright ï¿½ 2025 Tristan Hughes and 2025 UNR Capstone Team 10. All Rights Reserved.
 *
 *   Unauthorized copying of this file, via any medium is strictly prohibited
 *   This project is personal and confidential unless stated otherwise.
@@ -23,8 +23,12 @@
 #include "waveManager.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Engine/World.h"
+#include "Blueprint/UserWidget.h"
+#include "Components/TextBlock.h"
+#include "Kismet/GameplayStatics.h"
+#include "Blueprint/WidgetTree.h"
 
-// constructor to store initial values 
+// constructor to store initial values
 AwaveManager::AwaveManager()
 {
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
@@ -53,6 +57,20 @@ AwaveManager::AwaveManager()
 void AwaveManager::BeginPlay()
 {
 	Super::BeginPlay();
+    //Wave Widget HUD
+    if (WaveWidgetClass)
+    {
+        APlayerController* PC = UGameplayStatics::GetPlayerController(GetWorld(), 0);
+        if (PC)
+        {
+            WaveWidgetInstance = CreateWidget<UUserWidget>(PC, WaveWidgetClass);
+            if (WaveWidgetInstance)
+            {
+                WaveWidgetInstance->AddToViewport();
+                WaveText = Cast<UTextBlock>(WaveWidgetInstance->WidgetTree->FindWidget("WaveText"));
+            }
+        }
+    }
 	startWave();
 }
 
@@ -67,7 +85,15 @@ void AwaveManager::Tick(float DeltaTime)
 // this function is intended for starting new waves
 // assigns a number of enemies to spawn based of a given range
 // starts a timer to spawn new enemies based on an interval
-void AwaveManager::startWave() {
+void AwaveManager::startWave()
+{
+    //Wave HUD print updated text on each wave
+    if (WaveText)
+    {
+        FString WaveLabel = FString::Printf(TEXT("Wave %d"), waveNumber);
+        WaveText->SetText(FText::FromString(WaveLabel));
+    }
+
 	isBossRound = (waveNumber % bossRoundInterval == 0);
 	if (isBossRound) {
         total = 1;
