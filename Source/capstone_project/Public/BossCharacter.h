@@ -96,6 +96,12 @@ public:
     float cooldownTime;
 
     void shouldAttack();
+    
+    //Health Bar HUD *just Added
+    /*UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UI")
+    TSubclassOf<UUserWidget> HealthBarClass;
+    
+    UUserWidget* healthbarHUD; */
 
     //UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Combat", meta = (AllowPrivateAccess = "true"))
     USphereComponent* attackSphere;
