@@ -83,6 +83,9 @@ void ASmarterEnemy::BeginPlay()
     }
     waveManager = Cast<AwaveManager>(UGameplayStatics::GetActorOfClass(GetWorld(), AwaveManager::StaticClass()));
 
+    GetCapsuleComponent()->SetCollisionResponseToChannel(ECC_WorldDynamic, ECR_Ignore);
+    GetMesh()->SetCollisionResponseToChannel(ECC_WorldDynamic, ECR_Ignore);
+
     TArray<UPrimitiveComponent*> componentsArray;
     GetComponents<UPrimitiveComponent>(componentsArray);
     for (int32 i = 0; i < componentsArray.Num(); ++i) {
@@ -202,6 +205,15 @@ void ASmarterEnemy::destroy() {
             spawnParameters.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 
             GetWorld()->SpawnActor<AActor>(spawnBP, GetActorLocation(), FRotator::ZeroRotator, spawnParameters);
+        }
+    }
+    if (spawnBPSecond) {
+        if (FMath::RandRange(0, 1) <= spawnPercentSecond) {
+            FActorSpawnParameters spawnParametersSecond;
+            spawnParametersSecond.Owner = this;
+            spawnParametersSecond.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+
+            GetWorld()->SpawnActor<AActor>(spawnBPSecond, GetActorLocation(), FRotator::ZeroRotator, spawnParametersSecond);
         }
     }
     

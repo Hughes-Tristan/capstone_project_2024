@@ -85,6 +85,12 @@ public:
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     float spawnPercent;
 
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    TSubclassOf<AActor> spawnBPSecond;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    float spawnPercentSecond;
+
     // animation notify methods and variables
     UPROPERTY(BlueprintReadWrite, Category = "Animation")
     AActor* currentTarget;
