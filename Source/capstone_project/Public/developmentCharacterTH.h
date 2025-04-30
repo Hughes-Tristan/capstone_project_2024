@@ -247,6 +247,9 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "SprintFlag")
 	void setCanSprint(bool shouldAllowSprint);
 
+	UFUNCTION(BlueprintCallable, Category = "SprintFlag")
+	void setchildFriendlyFlag(bool shouldBeChildFriendly);
+
 	// punching flag and animations
 	//UPROPERTY(BlueprintReadWrite)
 	//bool canPunch;
@@ -293,6 +296,9 @@ private:
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, meta = (AllowPrivateAccess = "true"))
 	bool canSprint;
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, meta = (AllowPrivateAccess = "true"))
+	bool childFriendlyFlag;
 
 	void shouldMelee();
 

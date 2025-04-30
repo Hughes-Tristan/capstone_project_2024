@@ -555,7 +555,7 @@ void AdevelopmentCharacter::takeDamage(const UdamageInfo* damageInfo, float dama
 			}
 
 			damageComponent->applyDamage(damageInfo, damage);
-            if (HitReactWidget) {
+            if (HitReactWidget && !childFriendlyFlag) {
                 UFunction* pulseFunction = HitReactWidget->FindFunction(FName("PlayVignettePulse"));
                 if (pulseFunction)
                 {
@@ -1003,6 +1003,10 @@ void AdevelopmentCharacter::setCanBlock(bool shouldAllowBlock) {
 
 void AdevelopmentCharacter::setCanSprint(bool shouldAllowSprint) {
 	canSprint = shouldAllowSprint;
+}
+
+void AdevelopmentCharacter::setchildFriendlyFlag(bool shouldBeChildFriendly) {
+	childFriendlyFlag = shouldBeChildFriendly;
 }
 
 
