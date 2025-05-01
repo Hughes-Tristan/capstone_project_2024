@@ -120,7 +120,7 @@ public:
     UPROPERTY(BlueprintReadWrite, Category = "Damage")
     UdamageComponent* damageComponent;
 
-    UPROPERTY(EditAnywhere, Category = "Combat")
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combat")
     float effectiveAttackRange;
 
     void destroy();
